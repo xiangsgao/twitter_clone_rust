@@ -1,11 +1,11 @@
 
+use hyper::Body;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 use tower::Layer;
-use hyper::{Body, Response, StatusCode};
+use hyper::{Response, StatusCode};
 use hyper::service::Service;
 use tonic::body::BoxBody;
-
 #[derive(Debug, Clone)]
 pub struct AuthMiddleware<S> {
     inner: S,
@@ -49,10 +49,22 @@ impl<S> Service<hyper::Request<Body>> for AuthMiddleware<S>
 
         Box::pin(async move  {
 
-            let response = inner.call(req).await?;
+            // let response = inner.call(req).await?;
 
-            Ok(response)
+            // return Ok(response)
 
+            if(false){
+                let response = inner.call(req).await?;
+
+                return Ok(response)
+
+            }else{
+                let response = Response::builder()
+                    .status(StatusCode::UNAUTHORIZED)
+                    .body(tonic::body::empty_body())
+                    .unwrap();
+                return Ok(response);
+            }
 
         })
     }
