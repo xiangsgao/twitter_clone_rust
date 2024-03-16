@@ -13,3 +13,4 @@ let's make a Twitter clone!
 * unfollow
 * most popular and most follow at the top
 * some very basic web UI to test all of these 
+* unflattering image of Elon Musk in the home page. 
