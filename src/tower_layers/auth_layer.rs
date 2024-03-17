@@ -6,6 +6,7 @@ use tower::Layer;
 use hyper::{Response, StatusCode};
 use hyper::service::Service;
 use tonic::body::BoxBody;
+
 #[derive(Debug, Clone)]
 pub struct AuthMiddleware<S> {
     inner: S,

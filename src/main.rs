@@ -6,8 +6,10 @@ use std::error::Error;
 use clap::Parser;
 use dotenv::dotenv;
 use tonic::transport::Server;
+use tonic_async_interceptor::async_interceptor;
+use crate::interceptors::auth_interceptor::authenticate;
 use crate::services::user::proto::user_server::UserServer;
-use crate::tower_layers::auth_layer;
+//use crate::tower_layers::auth_layer;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -34,10 +36,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     // The stack of middleware that our service will be wrapped in
     let layer = tower::ServiceBuilder::new()
+        .layer(async_interceptor(authenticate))
         // Apply our own middleware
-        .layer(auth_layer::AuthLayer::default())
+        //.layer(auth_layer::AuthLayer::default())
         // Interceptors can be also be applied as middleware
-        //.layer(tonic::service::interceptor(intercept))
+        //.layer(tonic::service::interceptor(authenticate))
         .into_inner();
 
 
