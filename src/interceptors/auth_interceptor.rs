@@ -8,8 +8,8 @@ use url::Url;
 use crate::interceptors::auth_interceptor::service::AuthService;
 
 const PROTECTED_ROUTE: [&'static str; 2] = [
-    "/user.User/LoginUser",
-    "/user.User/RegisterUser"
+    "/twitter_clone.User/LoginUser",
+    "/twitter_clone.User/RegisterUser"
 ];
 
 pub mod service{

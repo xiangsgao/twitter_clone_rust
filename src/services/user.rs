@@ -3,8 +3,8 @@ use crate::services::user::proto::{LoginUserRequest, LoginUserResponse, Register
 use crate::services::user::proto::user_server::User;
 
 pub mod proto {
-    tonic::include_proto!("user");
-    pub(crate) const FILE_DESCRIPTOR_SET: &[u8] = tonic::include_file_descriptor_set!("user_descriptor");
+    tonic::include_proto!("twitter_clone");
+    pub(crate) const FILE_DESCRIPTOR_SET: &[u8] = tonic::include_file_descriptor_set!("twitter_clone_descriptor");
 }
 
 

@@ -5,10 +5,10 @@ fn main() -> Result<(), Box<dyn Error>>{
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
 
     tonic_build::configure()
-        .file_descriptor_set_path(out_dir.join("user_descriptor.bin"))
-        .compile(&["proto/user.proto"], &["proto"])?;
+        .file_descriptor_set_path(out_dir.join("twitter_clone_descriptor.bin"))
+        .compile(&["proto/twitter_clone.proto"], &["proto"])?;
 
-    tonic_build::compile_protos("proto/user.proto")?;
+    tonic_build::compile_protos("proto/twitter_clone.proto")?;
 
     Ok(())
 }

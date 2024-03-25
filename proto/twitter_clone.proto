@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package user;
+package twitter_clone;
 
 service User{
   rpc LoginUser(LoginUserRequest) returns (LoginUserResponse);
