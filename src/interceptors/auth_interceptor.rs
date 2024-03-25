@@ -1,25 +1,86 @@
+use tonic::{async_trait, Status};
+use tonic::codegen::http::{Request};
+use tonic::transport::{Body};
+use tonic_middleware::{
+  RequestInterceptor,
+};
+use url::Url;
+use crate::interceptors::auth_interceptor::service::AuthService;
 
-use tonic::{Request, Status};
+const PROTECTED_ROUTE: [&'static str; 2] = [
+    "/user.User/LoginUser",
+    "/user.User/RegisterUser"
+];
 
-struct UserContext {
-    user_id: String,
-    email: String,
-    first_name: String,
-    last_name: String,
-    screen_name: String,
-    active: bool
+pub mod service{
+    use async_trait::async_trait;
+    use crate::database::models::UserModel;
+
+    #[async_trait]
+    pub trait AuthService: Send + Sync + 'static {
+        async fn verify_user_token(&self, token: &str) -> Result<UserModel, String>;
+    }
+
+    #[derive(Default, Clone)]
+    pub struct AuthServiceImpl;
+
+    #[async_trait]
+    impl AuthService for AuthServiceImpl {
+        async fn verify_user_token(&self, token: &str) -> Result<UserModel, String> {
+            let user = UserModel::fetch_from_token(token).await;
+
+            if let Err(_) = &user{
+                return Err("Unauthenticated".to_string());
+            }
+            return Ok(user.unwrap());
+        }
+    }
 }
 
-// Async interceptor fn
-pub async fn authenticate(mut req: Request<()>) -> Result<Request<()>, Status> {
-    // Inspect the gRPC metadata.
-    // let auth_header_val = match req.metadata().get("x-my-auth-header") {
-    //     Some(val) => val,
-    //     None => return Err(Status::unauthenticated("Not authenticated")),
-    // };
 
-    // Insert an extension, which can be inspected by the service.
-    //req.extensions_mut().insert(UserContext { user_id: "001".to_string(), email: "test@gmail.com".to_string(), first_name: "super".to_string(), last_name: "test".to_string(), screen_name: "super_test".to_string(), active: true });
+#[derive(Clone)]
+pub struct AuthInterceptor<A: AuthService> {
+    pub auth_service: A,
+}
 
-    Ok(req)
+
+impl <A: AuthService> AuthInterceptor<A>{
+    fn is_protected_path (path: &str) -> bool{
+        let binding = Url::parse(path).unwrap();
+        let route = binding.path();
+        PROTECTED_ROUTE.contains(&route)
+    }
+}
+
+
+
+#[async_trait]
+impl<A: AuthService> RequestInterceptor for AuthInterceptor<A> {
+    async fn intercept(&self, mut req: Request<Body>) -> Result<Request<Body>, Status> {
+        let is_protected = Self::is_protected_path(&req.uri().to_string());
+
+        if !is_protected {
+            return Ok(req);
+        }
+
+        match req.headers().get("authorization").map(|v| v.to_str()) {
+            Some(Ok(token)) => {
+
+                let user = self
+                    .auth_service
+                    .verify_user_token(token)
+                    .await;
+
+                if let Err(_) = &user{
+                   return Err(Status::unauthenticated("Unauthenticated"))
+                }
+
+                req.extensions_mut().insert(user.unwrap());
+                Ok(req)
+            }
+            _ => Err(Status::unauthenticated("Unauthenticated")),
+        }
+    }
+
+
 }
