@@ -7,6 +7,11 @@ service User{
   rpc RegisterUser(RegisterUserRequest) returns (RegisterUserResponse);
 }
 
+service Tweet{
+
+}
+
+
 message LoginUserRequest{
   string email = 1;
   string password = 2;
