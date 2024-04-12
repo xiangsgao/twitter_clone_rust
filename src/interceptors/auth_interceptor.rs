@@ -7,9 +7,8 @@ use tonic_middleware::{
 use url::Url;
 use crate::interceptors::auth_interceptor::service::AuthService;
 
-const PROTECTED_ROUTE: [&'static str; 2] = [
-    "/twitter_clone.User/LoginUser",
-    "/twitter_clone.User/RegisterUser"
+const PROTECTED_ROUTE: [&'static str; 1] = [
+    "/twitter_clone.User/LoginUser"
 ];
 
 pub mod service{
