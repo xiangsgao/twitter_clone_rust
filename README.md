@@ -4,7 +4,7 @@ let's make a Twitter clone!
 # Minimum viable requirements
 * ~login user~ done
 * ~register user~ done
-* logout user
+* ~logout user~ done
 * post tweet
 * delete tweet
 * edit tweet
