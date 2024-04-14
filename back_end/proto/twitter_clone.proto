@@ -5,12 +5,19 @@ package twitter_clone;
 service User{
   rpc LoginUser(LoginUserRequest) returns (LoginUserResponse);
   rpc RegisterUser(RegisterUserRequest) returns (RegisterUserResponse);
+  rpc LogoutUser(LogoutUserRequest) returns (LogoutUserResponse);
 }
 
 service Tweet{
 
 }
 
+message LogoutUserRequest{
+}
+
+message LogoutUserResponse{
+  bool success = 1;
+}
 
 message LoginUserRequest{
   string email = 1;

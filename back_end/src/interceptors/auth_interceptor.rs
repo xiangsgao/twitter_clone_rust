@@ -1,3 +1,4 @@
+use serde::{Deserialize, Serialize};
 use tonic::{async_trait, Status};
 use tonic::codegen::http::{Request};
 use tonic::transport::{Body};
@@ -7,14 +8,23 @@ use tonic_middleware::{
 use url::Url;
 use crate::interceptors::auth_interceptor::service::AuthService;
 
-const PROTECTED_ROUTE: [&'static str; 0] = [
+#[derive(Deserialize, Serialize, Debug)]
+pub struct JwtClaims {
+    pub user_id: i32
+}
+
+
+const PROTECTED_ROUTE: [&'static str; 1] = [
+    "/twitter_clone.User/LogoutUser"
 ];
 
 pub mod service{
+    use std::collections::HashSet;
     use std::env;
     use async_trait::async_trait;
     use jsonwebtoken::{decode, DecodingKey, Validation};
-    use crate::database::models::{JwtClaims, TokenModel, UserModel};
+    use crate::database::models::{TokenModel, UserModel};
+    use crate::interceptors::auth_interceptor::JwtClaims;
 
     #[async_trait]
     pub trait AuthService: Send + Sync + 'static {
@@ -42,8 +52,14 @@ pub mod service{
                 }
             };
 
+            let secret = env::var("JWT_SECRET").expect("can not find jwt secret in env");
+            let final_key = &(secret.to_string() + &token_model.created_at.to_string())[0..secret.len() + 19];
+
+            let mut validation = Validation::default();
+            validation.validate_exp = false; // token never expired muahahahahahah
+            validation.required_spec_claims = HashSet::new();
             // for extra security, checks user id is the same as that in the decoded token
-            let token = match decode::<JwtClaims>(&token, &DecodingKey::from_secret(env::var("JWT_SECRET").unwrap().as_bytes()), &Validation::default()){
+            let token = match decode::<JwtClaims>(&token, &DecodingKey::from_secret(final_key.as_bytes()), &validation){
               Ok(e) => e,
               Err(_) =>{
                  return Err("Failed to decode token".to_string())
@@ -87,7 +103,6 @@ impl<A: AuthService> RequestInterceptor for AuthInterceptor<A> {
 
         match req.headers().get("authorization").map(|v| v.to_str()) {
             Some(Ok(token)) => {
-
                 let user = self
                     .auth_service
                     .verify_user_token(token)

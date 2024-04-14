@@ -1,6 +1,6 @@
 use tonic::{Request, Response, Status};
-use crate::database::models::{TokenModel, UserModel};
-use crate::services::user::proto::{LoginUserRequest, LoginUserResponse, RegisterUserRequest, RegisterUserResponse};
+use crate::database::models::{DatabaseModel, TokenModel, UserModel};
+use crate::services::user::proto::{LoginUserRequest, LoginUserResponse, LogoutUserRequest, LogoutUserResponse, RegisterUserRequest, RegisterUserResponse};
 use crate::services::user::proto::user_server::User;
 
 pub mod proto {
@@ -24,19 +24,19 @@ impl User for UserService{
             if let Err(_) = &user_res{
                 return Err(Status::unauthenticated("check if you have the right credentials"));
             }
-        
+
             let user_model = user_res.unwrap();
-            
+
             let token = match TokenModel::get_by_user_id(user_model.id).await{
                 Ok(e) => e,
-                Err(_) => match TokenModel::create_token(user_model.id).await { 
+                Err(_) => match TokenModel::create_token(user_model.id).await {
                     Ok(e) => e,
                     Err(_) => {
                         return Err(Status::internal("failed to create jwt token"));
                     }
                 }
             };
-            
+
             Ok(Response::new(LoginUserResponse { success: true, token: token.token}))
     }
 
@@ -50,10 +50,34 @@ impl User for UserService{
             );
 
             let result = UserModel::create_new_user(email,password, first_name, last_name).await;
-            if let Err(error) = &result{
+            if let Err(_) = &result{
                 // actually, this might be user error if like say the user already exists but we dont care for now
                 return Err(Status::internal("Failed to register user"))
             }
             Ok(Response::new(RegisterUserResponse { success: true}))
+    }
+
+    async fn logout_user(&self, request: Request<LogoutUserRequest>) -> Result<Response<LogoutUserResponse>, Status> {
+        let user: &UserModel = match request.extensions().get::<UserModel>(){
+            Some(e) => e,
+            None => {
+                return Err(Status::unauthenticated("user not found")); // shouldn't happen, should be caught by the interceptor
+            }
+        };
+        let token = match TokenModel::get_by_user_id(user.id).await{
+            Ok(e) => e,
+            Err(_) =>   {
+                return Err(Status::unauthenticated("token not found")); // shouldn't happen, should be caught by the interceptor
+            }
+        };
+
+        match token.delete().await{
+            Err(_) =>   {
+                return Err(Status::internal("token delete error"));
+            }
+            _=> ()
+        };
+
+        Ok(Response::new(LogoutUserResponse { success: true}))
     }
 }

@@ -1,16 +1,12 @@
-use sqlx::{Connection, Error, Executor, Row};
+use sqlx::{Connection, Error, Executor};
 use crate::database::database_client::get_database_connection;
 use bcrypt::{hash, DEFAULT_COST, verify};
 use sqlx::types::chrono;
 use chrono::{NaiveDateTime, Utc};
 use jsonwebtoken::{encode, EncodingKey, Header};
-use serde::{Deserialize, Serialize};
 use std::env;
+use crate::interceptors::auth_interceptor::JwtClaims;
 
-#[derive(Deserialize, Serialize, Debug)]
-pub struct JwtClaims {
-    pub user_id: i32
-}
 
 pub trait DatabaseModel {
     type Model;
@@ -112,11 +108,11 @@ impl UserModel{
         con.close().await?;
 
         let valid = verify(password, &user_data.password).expect("failed to verify password hash");
-        
+
         if !valid{
             return Err(Error::RowNotFound);
         }
-        
+
         return Ok(UserModel{
             id: user_data.id,
             first_name: user_data.first_name,
@@ -132,7 +128,7 @@ pub struct TokenModel {
     id: i32,
     user_id: i32,
     pub token: String,
-    created_at: NaiveDateTime
+    pub created_at: NaiveDateTime
 }
 
 impl DatabaseModel for TokenModel {
@@ -197,16 +193,23 @@ impl TokenModel {
         let my_claims = JwtClaims {
             user_id
         };
+
+        let timestamp = Utc::now().naive_utc();
+        
+        let final_key = &(key.to_string() + &timestamp.to_string())[0..key.len() + 19];
+
+        println!("{}", final_key);
+        
         let token = encode(
             &Header::default(),
             &my_claims,
-            &EncodingKey::from_secret(key.as_bytes()),
+            &EncodingKey::from_secret(final_key.as_bytes()),
         ).expect("failed to create jwt token");
 
 
         let mut con = get_database_connection().await?;
 
-       sqlx::query!("INSERT INTO token_table (user_id, token) VALUES ($1, $2);", user_id, token)
+       sqlx::query!("INSERT INTO token_table (user_id, token, create_at) VALUES ($1, $2, $3);", user_id, token, timestamp)
             .execute(&mut con).await?;
 
         let record = sqlx::query!("SELECT * FROM token_table WHERE user_id = $1", user_id)
