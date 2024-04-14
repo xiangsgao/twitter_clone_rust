@@ -1,6 +1,6 @@
 use tonic::{Request, Response, Status};
 use crate::database::models::{DatabaseModel, TokenModel, UserModel};
-use crate::services::user::proto::{LoginUserRequest, LoginUserResponse, LogoutUserRequest, LogoutUserResponse, RegisterUserRequest, RegisterUserResponse};
+use crate::services::user::proto::{GetUserRequest, GetUserResponse, LoginUserRequest, LoginUserResponse, LogoutUserRequest, LogoutUserResponse, RegisterUserRequest, RegisterUserResponse};
 use crate::services::user::proto::user_server::User;
 
 pub mod proto {
@@ -17,6 +17,12 @@ pub struct UserService {
 
 #[tonic::async_trait]
 impl User for UserService{
+
+    async fn get_user(&self, request: Request<GetUserRequest>) -> Result<Response<GetUserResponse>, Status> {
+        Err(Status::unimplemented("Not yet implemented"))
+    }
+    
+    
     async fn login_user(&self, request: Request<LoginUserRequest>) -> Result<Response<LoginUserResponse>, Status> {
             let r = request.get_ref();
             let (email, password) = (&r.email, &r.password);
@@ -24,12 +30,12 @@ impl User for UserService{
             if let Err(_) = &user_res{
                 return Err(Status::unauthenticated("check if you have the right credentials"));
             }
-
+        
             let user_model = user_res.unwrap();
 
-            let token = match TokenModel::get_by_user_id(user_model.id).await{
+            let token = match TokenModel::get_by_user_id(user_model.get_id()).await{
                 Ok(e) => e,
-                Err(_) => match TokenModel::create_token(user_model.id).await {
+                Err(_) => match TokenModel::create_token(user_model.get_id()).await {
                     Ok(e) => e,
                     Err(_) => {
                         return Err(Status::internal("failed to create jwt token"));
@@ -64,7 +70,7 @@ impl User for UserService{
                 return Err(Status::unauthenticated("user not found")); // shouldn't happen, should be caught by the interceptor
             }
         };
-        let token = match TokenModel::get_by_user_id(user.id).await{
+        let token = match TokenModel::get_by_user_id(user.get_id()).await{
             Ok(e) => e,
             Err(_) =>   {
                 return Err(Status::unauthenticated("token not found")); // shouldn't happen, should be caught by the interceptor

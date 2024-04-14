@@ -66,7 +66,7 @@ pub mod service{
               }
             };
             let claims = token.claims;
-            if user.id != claims.user_id{
+            if user.get_id() != claims.user_id{
                 return Err("What the fck? are you some hackers?".to_string());
             }
 

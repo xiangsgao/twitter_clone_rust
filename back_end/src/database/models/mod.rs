@@ -16,7 +16,7 @@ pub trait DatabaseModel {
 
 #[derive(Debug)]
 pub struct UserModel{
-    pub id: i32,
+    id: i32,
     pub first_name: String,
     pub last_name: String,
     pub email: String,
@@ -47,6 +47,10 @@ impl DatabaseModel for UserModel {
 }
 
 impl UserModel{
+    pub fn get_id(&self) -> i32 {
+        self.id
+    }
+
     pub async fn fetch_from_token (token: &str) -> Result<Self, Error> {
         let mut con = get_database_connection().await?;
         let token_data = sqlx::query!("SELECT * FROM token_table WHERE token = $1;", token)
@@ -220,5 +224,49 @@ impl TokenModel {
             created_at: record.create_at,
             token: record.token
         })
+    }
+}
+
+
+struct TweetModel{
+    id: i32,
+    pub user_id: i32,
+    pub content: String,
+    pub title: String,
+    pub parent_id: Option<i32>
+}
+
+impl DatabaseModel for TweetModel {
+    type Model = ();
+
+    async fn delete(&self) -> Result<(), Error> {
+        let mut con = get_database_connection().await?;
+
+        sqlx::query!("DELETE FROM tweet_table WHERE id = $1", self.id)
+            .execute(&mut  con)
+            .await?;
+
+        con.close().await?;
+
+        Ok(())
+    }
+
+    async fn update(&self) -> Result<(), Error> {
+        let mut con = get_database_connection().await?;
+
+        sqlx::query!("UPDATE tweet_table SET user_id = $1, content = $2, title = $3, parent_id = $4, updated_at = $5 WHERE id = $6", self.user_id, self.content, self.title, self.parent_id, Utc::now().naive_utc(), self.id)
+            .execute(&mut  con)
+            .await?;
+
+        con.close().await?;
+
+        Ok(())
+    }
+}
+
+
+impl TweetModel{
+    fn get_id(&self) -> i32{
+        self.id
     }
 }

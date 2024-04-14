@@ -24,6 +24,10 @@ CREATE TABLE tweet_table (
     CONSTRAINT fk_user
                          FOREIGN KEY (user_id)
                          REFERENCES user_table(id)
+                         ON DELETE CASCADE,
+    CONSTRAINT fk_parent
+                         FOREIGN KEY (parent_id)
+                         REFERENCES tweet_table(id)
                          ON DELETE CASCADE
 
 );
