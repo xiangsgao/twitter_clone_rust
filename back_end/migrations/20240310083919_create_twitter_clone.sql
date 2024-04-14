@@ -8,6 +8,8 @@ CREATE TABLE user_table (
     last_name VARCHAR(64) NOT NULL,
     email VARCHAR(128) NOT NULL UNIQUE,
     password VARCHAR(64) NOT NULL,
+    create_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     active BOOLEAN DEFAULT TRUE
 );
 
@@ -16,8 +18,8 @@ CREATE TABLE tweet_table (
     content TEXT NOT NULL,
     user_id INT NOT NULL,
     title VARCHAR(64) NOT NULL,
-    create_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW(),
+    create_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     parent_id INT NULL,
     CONSTRAINT fk_user
                          FOREIGN KEY (user_id)
@@ -31,8 +33,8 @@ CREATE TABLE comment_table(
     content TEXT NOT NULL,
     user_id INT NOT NULL,
     tweet_id INT NOT NULL,
-    create_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW(),
+    create_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_user
         FOREIGN KEY (user_id)
             REFERENCES user_table(id)
@@ -47,7 +49,8 @@ CREATE TABLE follower_table(
                                id SERIAL PRIMARY KEY NOT NULL,
                                user_id INT NOT NULL,
                                follower_id INT NOT NULL,
-                               create_at TIMESTAMP DEFAULT NOW(),
+                               create_at TIMESTAMP NOT NULL DEFAULT NOW(),
+                               updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
                                CONSTRAINT fk_user
                                    FOREIGN KEY (user_id)
                                        REFERENCES user_table(id)
@@ -61,10 +64,10 @@ CREATE TABLE follower_table(
 
 CREATE TABLE token_table(
                             id SERIAL PRIMARY KEY NOT NULL,
-                            user_id INT NOT NULL,
+                            user_id INT NOT NULL UNIQUE,
                             token varchar(128) NOT NULL,
-                            create_at TIMESTAMP DEFAULT NOW(),
-                            updated_at TIMESTAMP DEFAULT NOW(),
+                            create_at TIMESTAMP NOT NULL DEFAULT NOW(),
+                            updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
                             CONSTRAINT fk_user
                                 FOREIGN KEY (user_id)
                                     REFERENCES user_table(id)
@@ -76,6 +79,8 @@ CREATE TABLE like_table(
   user_id INT NOT NULL,
   tweet_id INT,
   comment_id INT,
+  create_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
   CONSTRAINT fk_user
                        FOREIGN KEY (user_id)
                        REFERENCES user_table(id)

@@ -7,13 +7,14 @@ use tonic_middleware::{
 use url::Url;
 use crate::interceptors::auth_interceptor::service::AuthService;
 
-const PROTECTED_ROUTE: [&'static str; 1] = [
-    "/twitter_clone.User/LoginUser"
+const PROTECTED_ROUTE: [&'static str; 0] = [
 ];
 
 pub mod service{
+    use std::env;
     use async_trait::async_trait;
-    use crate::database::models::UserModel;
+    use jsonwebtoken::{decode, DecodingKey, Validation};
+    use crate::database::models::{JwtClaims, TokenModel, UserModel};
 
     #[async_trait]
     pub trait AuthService: Send + Sync + 'static {
@@ -26,12 +27,34 @@ pub mod service{
     #[async_trait]
     impl AuthService for AuthServiceImpl {
         async fn verify_user_token(&self, token: &str) -> Result<UserModel, String> {
-            let user = UserModel::fetch_from_token(token).await;
 
-            if let Err(_) = &user{
-                return Err("Unauthenticated".to_string());
+            let token_model = match TokenModel::get_by_token(token).await{
+              Ok(e)=> e,
+              Err(_) => {
+                  return Err("Failed to find token".to_string());
+              }
+            };
+
+            let user = match UserModel::fetch_from_token(&token_model.token).await{
+                Ok(e)=> e,
+                Err(_) => {
+                    return Err("Failed to find user".to_string());
+                }
+            };
+
+            // for extra security, checks user id is the same as that in the decoded token
+            let token = match decode::<JwtClaims>(&token, &DecodingKey::from_secret(env::var("JWT_SECRET").unwrap().as_bytes()), &Validation::default()){
+              Ok(e) => e,
+              Err(_) =>{
+                 return Err("Failed to decode token".to_string())
+              }
+            };
+            let claims = token.claims;
+            if user.id != claims.user_id{
+                return Err("What the fck? are you some hackers?".to_string());
             }
-            return Ok(user.unwrap());
+
+            return Ok(user);
         }
     }
 }

@@ -1,5 +1,5 @@
 use tonic::{Request, Response, Status};
-use crate::database::models::UserModel;
+use crate::database::models::{TokenModel, UserModel};
 use crate::services::user::proto::{LoginUserRequest, LoginUserResponse, RegisterUserRequest, RegisterUserResponse};
 use crate::services::user::proto::user_server::User;
 
@@ -20,13 +20,24 @@ impl User for UserService{
     async fn login_user(&self, request: Request<LoginUserRequest>) -> Result<Response<LoginUserResponse>, Status> {
             let r = request.get_ref();
             let (email, password) = (&r.email, &r.password);
-            let user_model = UserModel::get_by_email_and_password(email, password).await;
-            if let Err(_) = &user_model{
+            let user_res = UserModel::get_by_email_and_password(email, password).await;
+            if let Err(_) = &user_res{
                 return Err(Status::unauthenticated("check if you have the right credentials"));
             }
-            // TO DO create and return auth Token
-
-            Ok(Response::new(LoginUserResponse { success: true}))
+        
+            let user_model = user_res.unwrap();
+            
+            let token = match TokenModel::get_by_user_id(user_model.id).await{
+                Ok(e) => e,
+                Err(_) => match TokenModel::create_token(user_model.id).await { 
+                    Ok(e) => e,
+                    Err(_) => {
+                        return Err(Status::internal("failed to create jwt token"));
+                    }
+                }
+            };
+            
+            Ok(Response::new(LoginUserResponse { success: true, token: token.token}))
     }
 
     async fn register_user(&self, request: Request<RegisterUserRequest>) -> Result<Response<RegisterUserResponse>, Status> {

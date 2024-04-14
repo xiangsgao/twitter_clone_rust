@@ -19,6 +19,7 @@ message LoginUserRequest{
 
 message LoginUserResponse{
   bool success = 1;
+  string token = 2;
 }
 
 
