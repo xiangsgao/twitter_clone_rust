@@ -195,11 +195,9 @@ impl TokenModel {
         };
 
         let timestamp = Utc::now().naive_utc();
-        
+
         let final_key = &(key.to_string() + &timestamp.to_string())[0..key.len() + 19];
 
-        println!("{}", final_key);
-        
         let token = encode(
             &Header::default(),
             &my_claims,
