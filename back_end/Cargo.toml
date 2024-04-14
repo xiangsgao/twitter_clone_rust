@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 clap = { version = "4.5.2", features = ["derive"] }
 dotenv = "0.15.0"
-sqlx = { version = "0.7", features = [ "runtime-async-std", "tls-native-tls", "postgres" ] }
+sqlx = { version = "0.7", features = [ "runtime-async-std", "tls-native-tls", "postgres", "chrono" ] }
 tonic = "0.11.0"
 tokio = { version = "1.36.0", features = ["full"] }
 prost = "0.12.3"
@@ -22,6 +22,7 @@ anyhow = "1.0.80"
 tonic-middleware = "0.1.3"
 async-trait = "0.1.79"
 url = "2.5.0"
+bcrypt = "0.15.1"
 
 [build-dependencies]
 tonic-build = "0.11.0"
