@@ -1,4 +1,3 @@
-use std::fmt::format;
 use tonic::{Request, Response, Status};
 use crate::database::models::UserModel;
 use crate::services::user::proto::{LoginUserRequest, LoginUserResponse, RegisterUserRequest, RegisterUserResponse};

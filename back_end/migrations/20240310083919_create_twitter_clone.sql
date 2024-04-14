@@ -13,9 +13,9 @@ CREATE TABLE user_table (
 
 CREATE TABLE tweet_table (
     id SERIAL PRIMARY KEY NOT NULL,
-    content TEXT,
-    user_id INT,
-    title VARCHAR(64),
+    content TEXT NOT NULL,
+    user_id INT NOT NULL,
+    title VARCHAR(64) NOT NULL,
     create_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW(),
     parent_id INT NULL,
@@ -28,9 +28,9 @@ CREATE TABLE tweet_table (
 
 CREATE TABLE comment_table(
     id SERIAL PRIMARY KEY NOT NULL,
-    content TEXT,
-    user_id INT,
-    tweet_id INT,
+    content TEXT NOT NULL,
+    user_id INT NOT NULL,
+    tweet_id INT NOT NULL,
     create_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW(),
     CONSTRAINT fk_user
@@ -45,8 +45,8 @@ CREATE TABLE comment_table(
 
 CREATE TABLE follower_table(
                                id SERIAL PRIMARY KEY NOT NULL,
-                               user_id INT,
-                               follower_id INT,
+                               user_id INT NOT NULL,
+                               follower_id INT NOT NULL,
                                create_at TIMESTAMP DEFAULT NOW(),
                                CONSTRAINT fk_user
                                    FOREIGN KEY (user_id)
@@ -61,8 +61,8 @@ CREATE TABLE follower_table(
 
 CREATE TABLE token_table(
                             id SERIAL PRIMARY KEY NOT NULL,
-                            user_id INT,
-                            token varchar(128),
+                            user_id INT NOT NULL,
+                            token varchar(128) NOT NULL,
                             create_at TIMESTAMP DEFAULT NOW(),
                             updated_at TIMESTAMP DEFAULT NOW(),
                             CONSTRAINT fk_user
@@ -73,7 +73,7 @@ CREATE TABLE token_table(
 
 CREATE TABLE like_table(
   id SERIAL PRIMARY KEY NOT NULL,
-  user_id INT,
+  user_id INT NOT NULL,
   tweet_id INT,
   comment_id INT,
   CONSTRAINT fk_user
