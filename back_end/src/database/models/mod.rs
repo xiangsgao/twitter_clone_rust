@@ -20,6 +20,7 @@ pub struct UserModel{
     pub first_name: String,
     pub last_name: String,
     pub email: String,
+    pub active: bool
 }
 
 impl DatabaseModel for UserModel {
@@ -69,7 +70,8 @@ impl UserModel{
             id: user_data.id,
             first_name: user_data.first_name,
             last_name: user_data.last_name,
-            email: user_data.email
+            email: user_data.email,
+            active: user_data.active.unwrap_or(false)
         })
     }
 
@@ -99,6 +101,7 @@ impl UserModel{
             email: newly_created.email,
             first_name: newly_created.first_name,
             last_name: newly_created.last_name,
+            active: newly_created.active.unwrap_or(false)
         };
 
         Ok(retal)
@@ -121,7 +124,8 @@ impl UserModel{
             id: user_data.id,
             first_name: user_data.first_name,
             last_name: user_data.last_name,
-            email: user_data.email
+            email: user_data.email,
+            active: user_data.active.unwrap_or(false)
         });
     }
 }
@@ -269,4 +273,69 @@ impl TweetModel{
     fn get_id(&self) -> i32{
         self.id
     }
+}
+
+#[derive(Debug)]
+pub struct FollowerModel {
+    id: i32,
+    pub user_id: i32,
+    pub follower_id: i32,
+}
+
+impl DatabaseModel for FollowerModel {
+    type Model = Self;
+
+    async fn delete(&self) -> Result<(), Error> {
+        let mut con = get_database_connection().await?;
+
+        sqlx::query!("DELETE FROM follower_table WHERE id = $1", self.id)
+            .execute(&mut  con)
+            .await?;
+
+        con.close().await?;
+
+        Ok(())
+    }
+
+    async fn update(&self) -> Result<(), Error> {
+        let mut con = get_database_connection().await?;
+
+        sqlx::query!("UPDATE follower_table SET user_id = $1, follower_id = $2 WHERE id = $3", self.user_id, self.follower_id, self.id)
+            .execute(&mut  con)
+            .await?;
+
+        con.close().await?;
+
+        Ok(())
+    }
+}
+
+impl FollowerModel {
+    pub async fn get_follower_count_by_user_id(user_id: i32) -> Result<i64, Error>{
+        let mut con = get_database_connection().await?;
+
+        let result = sqlx::query!("SELECT COUNT(*) from follower_table WHERE user_id = $1", user_id)
+            .fetch_one(&mut con)
+            .await?;
+
+        con.close().await?;
+
+        Ok(result.count.unwrap_or(0))
+    }
+
+
+    pub async fn get_following_count_by_user_id(user_id: i32) -> Result<i64, Error>{
+        let mut con = get_database_connection().await?;
+
+        let result = sqlx::query!("SELECT COUNT(*) from follower_table WHERE follower_id = $1", user_id)
+            .fetch_one(&mut con)
+            .await?;
+
+        con.close().await?;
+
+        Ok(result.count.unwrap_or(0))
+    }
+
+
+
 }

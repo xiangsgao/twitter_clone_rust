@@ -10,6 +10,14 @@ service User{
 }
 
 service Tweet{
+  rpc CreateTweet(CreateTweetRequest) returns (CreateTweetResponse);
+}
+
+message CreateTweetRequest{
+
+}
+
+message CreateTweetResponse{
 
 }
 
@@ -22,8 +30,8 @@ message GetUserResponse{
   string last_name = 2;
   string email = 3;
   bool active = 4;
-  int32 followers = 5;
-  int32 following = 6;
+  uint32  followers = 5;
+  uint32  following = 6;
 }
 
 message LogoutUserRequest{

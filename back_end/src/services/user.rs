@@ -1,5 +1,5 @@
 use tonic::{Request, Response, Status};
-use crate::database::models::{DatabaseModel, TokenModel, UserModel};
+use crate::database::models::{DatabaseModel, FollowerModel, TokenModel, UserModel};
 use crate::services::user::proto::{GetUserRequest, GetUserResponse, LoginUserRequest, LoginUserResponse, LogoutUserRequest, LogoutUserResponse, RegisterUserRequest, RegisterUserResponse};
 use crate::services::user::proto::user_server::User;
 
@@ -19,7 +19,26 @@ pub struct UserService {
 impl User for UserService{
 
     async fn get_user(&self, request: Request<GetUserRequest>) -> Result<Response<GetUserResponse>, Status> {
-        Err(Status::unimplemented("Not yet implemented"))
+
+        let user: &UserModel = match request.extensions().get::<UserModel>(){
+            Some(e) => e,
+            None =>{
+                return Err(Status::unknown("This error is not possible"));
+            }
+        };
+
+        let followers = FollowerModel::get_follower_count_by_user_id(user.get_id()).await.unwrap_or(0);
+        let following = FollowerModel::get_following_count_by_user_id(user.get_id()).await.unwrap_or(0);
+
+        Ok(Response::new(GetUserResponse {
+            first_name: user.first_name.clone(),
+            last_name: user.last_name.clone(),
+            email: user.email.clone(),
+            active: user.active,
+            // why does 0 return absolutely nothing???? wtf
+            followers: followers.try_into().unwrap(),
+            following: following.try_into().unwrap(),
+        }))
     }
     
     
