@@ -9,8 +9,8 @@ let's make a Twitter clone!
 * delete tweet
 * edit tweet
 * like tweet
-* Follow
-* unfollow
+* ~Follow~ done
+* ~unfollow~ done
 * most popular and most follow at the top
 * some very basic web UI to test all of these 
 * unflattering image of Elon Musk in the home page. 
