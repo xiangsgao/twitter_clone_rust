@@ -10,7 +10,7 @@ CREATE TABLE user_table (
     password VARCHAR(64) NOT NULL,
     create_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    active BOOLEAN DEFAULT TRUE
+    active BOOLEAN DEFAULT TRUE NOT NULL
 );
 
 CREATE TABLE tweet_table (
@@ -55,6 +55,7 @@ CREATE TABLE follower_table(
                                follower_id INT NOT NULL,
                                create_at TIMESTAMP NOT NULL DEFAULT NOW(),
                                updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+                               UNIQUE (user_id, follower_id),
                                CONSTRAINT fk_user
                                    FOREIGN KEY (user_id)
                                        REFERENCES user_table(id)

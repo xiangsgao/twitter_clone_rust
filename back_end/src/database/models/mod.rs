@@ -71,7 +71,7 @@ impl UserModel{
             first_name: user_data.first_name,
             last_name: user_data.last_name,
             email: user_data.email,
-            active: user_data.active.unwrap_or(false)
+            active: user_data.active
         })
     }
 
@@ -101,7 +101,7 @@ impl UserModel{
             email: newly_created.email,
             first_name: newly_created.first_name,
             last_name: newly_created.last_name,
-            active: newly_created.active.unwrap_or(false)
+            active: newly_created.active
         };
 
         Ok(retal)
@@ -125,7 +125,7 @@ impl UserModel{
             first_name: user_data.first_name,
             last_name: user_data.last_name,
             email: user_data.email,
-            active: user_data.active.unwrap_or(false)
+            active: user_data.active
         });
     }
 }
@@ -308,9 +308,37 @@ impl DatabaseModel for FollowerModel {
 
         Ok(())
     }
+
+
 }
 
 impl FollowerModel {
+
+    pub async fn get_by_ids(user_id: i32, follower_id: i32) -> Result<Self, Error>{
+        let mut con = get_database_connection().await?;
+
+        let record = sqlx::query!("SELECT * FROM follower_table WHERE user_id = $1 AND follower_id = $2;", user_id, follower_id)
+            .fetch_one(&mut con).await?;
+
+        con.close().await?;
+        Ok(FollowerModel{
+            id: record.id,
+            user_id: record.user_id,
+            follower_id: record.follower_id
+        })
+    }
+
+    pub async fn create_new_follower(user_id: i32, follower_id: i32) -> Result<Self, Error>{
+        let mut con = get_database_connection().await?;
+
+        sqlx::query!("INSERT INTO follower_table (user_id, follower_id) VALUES ($1, $2);", user_id, follower_id)
+            .execute(&mut con).await?;
+
+        con.close().await?;
+
+        Self::get_by_ids(user_id, follower_id).await
+    }
+
     pub async fn get_follower_count_by_user_id(user_id: i32) -> Result<i64, Error>{
         let mut con = get_database_connection().await?;
 

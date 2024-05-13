@@ -6,12 +6,21 @@ service User{
   rpc LoginUser(LoginUserRequest) returns (LoginUserResponse);
   rpc RegisterUser(RegisterUserRequest) returns (RegisterUserResponse);
   rpc LogoutUser(LogoutUserRequest) returns (LogoutUserResponse);
-  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+  rpc GetUser(GetUserRequest) returns (UserResponse);
+  rpc FollowUser(FollowRequest) returns (UserResponse);
+  rpc UnfollowUser(FollowRequest) returns (UserResponse);
 }
+
+
 
 service Tweet{
   rpc CreateTweet(CreateTweetRequest) returns (CreateTweetResponse);
 }
+
+message FollowRequest{
+  int32 user_id = 1;
+}
+
 
 message CreateTweetRequest{
 
@@ -25,7 +34,7 @@ message GetUserRequest{
 
 }
 
-message GetUserResponse{
+message UserResponse{
   string first_name = 1;
   string last_name = 2;
   string email = 3;
