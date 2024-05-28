@@ -364,6 +364,4 @@ impl FollowerModel {
         Ok(result.count.unwrap_or(0))
     }
 
-
-
 }

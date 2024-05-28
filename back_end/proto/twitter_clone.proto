@@ -1,5 +1,5 @@
 syntax = "proto3";
-
+import "google/protobuf/timestamp.proto";
 package twitter_clone;
 
 service User{
@@ -15,6 +15,59 @@ service User{
 
 service Tweet{
   rpc CreateTweet(CreateTweetRequest) returns (CreateTweetResponse);
+  rpc DeleteTweet(DeleteTweetRequest) returns (DeleteTweetResponse);
+  rpc EditTweet(EditTweetRequest) returns (EditTweetResponse);
+  rpc GetTweetByUser(GetTweetByUserRequest) returns (GetTweetResponse);
+  rpc GetAllTweet(GetAllTweetRequest) returns (GetTweetResponse);
+}
+
+enum TweetSort{
+  sort_created_at = 0;
+  sort_updated_at = 1;
+}
+
+enum TweetFilter{
+  filter_created_at = 0;
+  filter_updated_at = 1;
+}
+
+message GetAllTweetRequest{
+  int32 page = 1;
+  int32 limit = 2;
+  optional TweetFilter filter = 3;
+  optional TweetSort sort = 4;
+}
+
+
+message GetTweetByUserRequest{
+  int32 user_id = 1;
+  int32 page = 2;
+  int32 limit = 3;
+  optional TweetFilter filter = 4;
+  optional TweetSort sort = 5;
+}
+
+message GetTweetResponse{
+  repeated TweetRecord tweets = 1;
+  int32 page = 2;
+  int32 limit = 3;
+
+}
+
+message EditTweetRequest{
+  int32 tweet_id = 1;
+}
+
+message EditTweetResponse{
+  bool success = 1;
+}
+
+message DeleteTweetRequest{
+  int32 tweet_id = 1;
+}
+
+message DeleteTweetResponse{
+  bool success = 1;
 }
 
 message FollowRequest{
@@ -23,11 +76,12 @@ message FollowRequest{
 
 
 message CreateTweetRequest{
-
+  string title = 1;
+  string content = 2;
 }
 
 message CreateTweetResponse{
-
+  bool success = 1;
 }
 
 message GetUserRequest{
@@ -70,4 +124,14 @@ message RegisterUserRequest{
 
 message RegisterUserResponse{
   bool success = 1;
+}
+
+message TweetRecord{
+  int32 id = 1;
+  string content = 2;
+  string title = 3;
+  int32 user_id = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+  int32 parent_id = 7;
 }
