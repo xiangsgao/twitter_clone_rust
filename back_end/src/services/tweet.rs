@@ -1,4 +1,5 @@
 use tonic::{Request, Response, Status};
+use crate::database::models::{TweetModel, UserModel};
 use crate::services::tweet::proto::{CreateTweetRequest, CreateTweetResponse, DeleteTweetRequest, DeleteTweetResponse, EditTweetRequest, EditTweetResponse, GetAllTweetRequest, GetTweetByUserRequest, GetTweetResponse};
 use crate::services::tweet::proto::tweet_server::Tweet;
 
@@ -15,7 +16,25 @@ pub struct TweetService {
 #[tonic::async_trait]
 impl Tweet for TweetService{
     async fn create_tweet(&self, request: Request<CreateTweetRequest>) -> Result<Response<CreateTweetResponse>, Status> {
-        let tweet = Tweet
+        let r = request.get_ref();
+        let user: &UserModel = match request.extensions().get::<UserModel>(){
+            Some(e) => e,
+            None => {
+                return Err(Status::unauthenticated("user not found")); // shouldn't happen, should be caught by the interceptor
+            }
+        };
+        let (content, title, parent_id) = (&r.content, &r.title, r.parent_id);
+        match TweetModel::create_tweet(title, content, parent_id, user.get_id()).await{
+            Ok(_) => (),
+            Err(_) => {
+                return Err(Status::internal("Tweet creation failed")); // shouldn't happen, should be caught by the interceptor
+            }
+        };
+        
+        return Ok(Response::new(CreateTweetResponse{
+            success: true
+        }));
+        
     }
 
     async fn delete_tweet(&self, request: Request<DeleteTweetRequest>) -> Result<Response<DeleteTweetResponse>, Status> {

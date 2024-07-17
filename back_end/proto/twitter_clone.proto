@@ -78,6 +78,7 @@ message FollowRequest{
 message CreateTweetRequest{
   string title = 1;
   string content = 2;
+  optional int32 parent_id = 3;
 }
 
 message CreateTweetResponse{

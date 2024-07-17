@@ -233,7 +233,7 @@ impl TokenModel {
 }
 
 
-struct TweetModel{
+pub struct TweetModel{
     id: i32,
     pub user_id: i32,
     pub content: String,
@@ -293,7 +293,7 @@ impl TweetModel{
         });
     }
     
-    async fn create_tweet(title: &str, content: &str, parent_id: Option<i32>, user_id: i32) -> Result<Self, Error>{
+    pub async fn create_tweet(title: &str, content: &str, parent_id: Option<i32>, user_id: i32) -> Result<Self, Error>{
         let mut con = get_database_connection().await?;
         let res = sqlx::query!("INSERT INTO tweet_table (title, content, parent_id, user_id) VALUES ($1, $2, $3, $4) RETURNING id;", title, content, parent_id, user_id)
             .fetch_one(&mut con)
