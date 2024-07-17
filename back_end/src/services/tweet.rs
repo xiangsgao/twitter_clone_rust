@@ -15,7 +15,7 @@ pub struct TweetService {
 #[tonic::async_trait]
 impl Tweet for TweetService{
     async fn create_tweet(&self, request: Request<CreateTweetRequest>) -> Result<Response<CreateTweetResponse>, Status> {
-        todo!()
+        let tweet = Tweet
     }
 
     async fn delete_tweet(&self, request: Request<DeleteTweetRequest>) -> Result<Response<DeleteTweetResponse>, Status> {

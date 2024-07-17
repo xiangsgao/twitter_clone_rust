@@ -5,6 +5,7 @@ use sqlx::types::chrono;
 use chrono::{NaiveDateTime, Utc};
 use jsonwebtoken::{encode, EncodingKey, Header};
 use std::env;
+use sqlx::encode::IsNull::No;
 use crate::interceptors::auth_interceptor::JwtClaims;
 
 
@@ -242,6 +243,8 @@ struct TweetModel{
 
 impl DatabaseModel for TweetModel {
     type Model = ();
+    
+
 
     async fn delete(&self) -> Result<(), Error> {
         let mut con = get_database_connection().await?;
@@ -266,12 +269,37 @@ impl DatabaseModel for TweetModel {
 
         Ok(())
     }
+    
 }
 
 
 impl TweetModel{
     fn get_id(&self) -> i32{
         self.id
+    }
+
+    async fn get_by_id(tweet_id: i32) -> Result<Self, Error>{
+        let mut con = get_database_connection().await?;
+
+        let record = sqlx::query!("SELECT * FROM tweet_table WHERE id = $1;;", tweet_id)
+            .fetch_one(&mut con).await?;
+
+        return Ok(TweetModel{
+            id: record.id,
+            parent_id: record.parent_id,
+            title: record.title,
+            content: record.content,
+            user_id: record.user_id
+        });
+    }
+    
+    async fn create_tweet(title: &str, content: &str, parent_id: Option<i32>, user_id: i32) -> Result<Self, Error>{
+        let mut con = get_database_connection().await?;
+        let res = sqlx::query!("INSERT INTO tweet_table (title, content, parent_id, user_id) VALUES ($1, $2, $3, $4) RETURNING id;", title, content, parent_id, user_id)
+            .fetch_one(&mut con)
+            .await?;
+        let retval = Self::get_by_id(res.id).await?;
+        return Ok(retval);
     }
 }
 
@@ -308,8 +336,6 @@ impl DatabaseModel for FollowerModel {
 
         Ok(())
     }
-
-
 }
 
 impl FollowerModel {
