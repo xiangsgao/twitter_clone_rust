@@ -278,7 +278,7 @@ impl TweetModel{
         self.id
     }
 
-    async fn get_by_id(tweet_id: i32) -> Result<Self, Error>{
+    pub async fn get_by_id(tweet_id: i32) -> Result<Self, Error>{
         let mut con = get_database_connection().await?;
 
         let record = sqlx::query!("SELECT * FROM tweet_table WHERE id = $1;;", tweet_id)

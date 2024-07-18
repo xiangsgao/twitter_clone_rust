@@ -1,5 +1,5 @@
 use tonic::{Request, Response, Status};
-use crate::database::models::{TweetModel, UserModel};
+use crate::database::models::{DatabaseModel, TweetModel, UserModel};
 use crate::services::tweet::proto::{CreateTweetRequest, CreateTweetResponse, DeleteTweetRequest, DeleteTweetResponse, EditTweetRequest, EditTweetResponse, GetAllTweetRequest, GetTweetByUserRequest, GetTweetResponse};
 use crate::services::tweet::proto::tweet_server::Tweet;
 
@@ -38,7 +38,25 @@ impl Tweet for TweetService{
     }
 
     async fn delete_tweet(&self, request: Request<DeleteTweetRequest>) -> Result<Response<DeleteTweetResponse>, Status> {
-        todo!()
+        let id = request.get_ref().tweet_id;
+        
+        let tweet = match TweetModel::get_by_id(id).await{
+            Ok(t) => t,
+            Err(_) => {
+                return Err(Status::invalid_argument("Failed to find Tweet"));
+            }
+        };
+        
+        match tweet.delete().await{
+            Ok(_) => (),
+            Err(_) => {
+                return Err(Status::internal("Failed to delete Tweet"));
+            }
+        };
+        
+        return Ok(Response::new(DeleteTweetResponse{
+            success: true,
+        }));
     }
 
     async fn edit_tweet(&self, request: Request<EditTweetRequest>) -> Result<Response<EditTweetResponse>, Status> {
