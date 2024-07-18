@@ -281,7 +281,22 @@ impl TweetModel{
     pub async fn get_by_id(tweet_id: i32) -> Result<Self, Error>{
         let mut con = get_database_connection().await?;
 
-        let record = sqlx::query!("SELECT * FROM tweet_table WHERE id = $1;;", tweet_id)
+        let record = sqlx::query!("SELECT * FROM tweet_table WHERE id = $1;", tweet_id)
+            .fetch_one(&mut con).await?;
+
+        return Ok(TweetModel{
+            id: record.id,
+            parent_id: record.parent_id,
+            title: record.title,
+            content: record.content,
+            user_id: record.user_id
+        });
+    }
+    
+    pub async fn get_by_user_and_id(tweet_id: i32, user_id: i32) -> Result<Self, Error>{
+        let mut con = get_database_connection().await?;
+
+        let record = sqlx::query!("SELECT * FROM tweet_table WHERE id = $1 AND user_id = $2;", tweet_id, user_id)
             .fetch_one(&mut con).await?;
 
         return Ok(TweetModel{

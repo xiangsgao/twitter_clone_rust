@@ -1,3 +1,4 @@
+use serde::de::Unexpected::Str;
 use tonic::{Request, Response, Status};
 use crate::database::models::{DatabaseModel, TweetModel, UserModel};
 use crate::services::tweet::proto::{CreateTweetRequest, CreateTweetResponse, DeleteTweetRequest, DeleteTweetResponse, EditTweetRequest, EditTweetResponse, GetAllTweetRequest, GetTweetByUserRequest, GetTweetResponse};
@@ -39,8 +40,15 @@ impl Tweet for TweetService{
 
     async fn delete_tweet(&self, request: Request<DeleteTweetRequest>) -> Result<Response<DeleteTweetResponse>, Status> {
         let id = request.get_ref().tweet_id;
+
+        let user: &UserModel = match request.extensions().get::<UserModel>(){
+            Some(e) => e,
+            None => {
+                return Err(Status::unauthenticated("user not found")); // shouldn't happen, should be caught by the interceptor
+            }
+        };
         
-        let tweet = match TweetModel::get_by_id(id).await{
+        let tweet = match TweetModel::get_by_user_and_id(id, user.get_id()).await{
             Ok(t) => t,
             Err(_) => {
                 return Err(Status::invalid_argument("Failed to find Tweet"));
@@ -60,7 +68,37 @@ impl Tweet for TweetService{
     }
 
     async fn edit_tweet(&self, request: Request<EditTweetRequest>) -> Result<Response<EditTweetResponse>, Status> {
-        todo!()
+        let fields = request.get_ref();
+        let (id, title, content, parent_id ) = (fields.tweet_id, &fields.title, &fields.content, fields.parent_id);
+        
+        let user: &UserModel = match request.extensions().get::<UserModel>(){
+            Some(e) => e,
+            None => {
+                return Err(Status::unauthenticated("user not found")); // shouldn't happen, should be caught by the interceptor
+            }
+        };
+
+        let mut tweet = match TweetModel::get_by_user_and_id(id, user.get_id()).await{
+            Ok(t) => t,
+            Err(_) => {
+                return Err(Status::invalid_argument("Failed to find Tweet"));
+            }
+        };
+        
+        tweet.title = String::from(title);
+        tweet.content = String::from(content);
+        tweet.parent_id = parent_id;
+        match tweet.update().await{
+            Ok(_) => (),
+            Err(_) => {
+                return Err(Status::internal("failed to update")); 
+            }
+        };
+        
+        Ok(Response::new(EditTweetResponse{
+            success: true
+        }))
+        
     }
 
     async fn get_tweet_by_user(&self, request: Request<GetTweetByUserRequest>) -> Result<Response<GetTweetResponse>, Status> {

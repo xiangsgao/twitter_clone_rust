@@ -56,6 +56,9 @@ message GetTweetResponse{
 
 message EditTweetRequest{
   int32 tweet_id = 1;
+  string title = 2;
+  string content = 3;
+  optional int32 parent_id = 4;
 }
 
 message EditTweetResponse{
