@@ -137,5 +137,5 @@ message TweetRecord{
   int32 user_id = 4;
   google.protobuf.Timestamp created_at = 5;
   google.protobuf.Timestamp updated_at = 6;
-  int32 parent_id = 7;
+  optional int32 parent_id = 7;
 }

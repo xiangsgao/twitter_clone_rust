@@ -1,8 +1,11 @@
-use serde::de::Unexpected::Str;
+use std::time::{SystemTime, UNIX_EPOCH};
+use chrono::Utc;
+use prost_types::Timestamp;
 use tonic::{Request, Response, Status};
 use crate::database::models::{DatabaseModel, TweetModel, UserModel};
 use crate::services::tweet::proto::{CreateTweetRequest, CreateTweetResponse, DeleteTweetRequest, DeleteTweetResponse, EditTweetRequest, EditTweetResponse, GetAllTweetRequest, GetTweetByUserRequest, GetTweetResponse};
 use crate::services::tweet::proto::tweet_server::Tweet;
+use crate::services::tweet::proto::TweetRecord;
 
 pub mod proto {
     tonic::include_proto!("twitter_clone");
@@ -102,7 +105,33 @@ impl Tweet for TweetService{
     }
 
     async fn get_tweet_by_user(&self, request: Request<GetTweetByUserRequest>) -> Result<Response<GetTweetResponse>, Status> {
-        todo!()
+        let fields = request.get_ref();
+        let (page, limit, user_id) = (fields.page, fields.limit, fields.user_id);
+        
+        let tweets = match TweetModel::get_tweets_by_user_id(user_id, page, limit).await{
+            Ok(tweets) => tweets,
+            Err(_) =>{
+                return Err(Status::internal("failed to get tweets"));
+            }
+        };
+        
+        let tweets: Vec<TweetRecord> = tweets.into_iter().map(|tweet|{
+            TweetRecord{
+                id: tweet.get_id(),
+                content: tweet.content,
+                title: tweet.title,
+                user_id,
+                created_at: Some(Timestamp::from(SystemTime::from(Utc::now()))),
+                updated_at: Some(Timestamp::from(SystemTime::from(Utc::now()))),
+                parent_id: tweet.parent_id,
+            }
+        }).collect();
+
+        Ok(Response::new(GetTweetResponse{
+            tweets,
+            page,
+            limit,
+        })) 
     }
 
     async fn get_all_tweet(&self, request: Request<GetAllTweetRequest>) -> Result<Response<GetTweetResponse>, Status> {

@@ -9,6 +9,5 @@ fn main() -> Result<(), Box<dyn Error>>{
         .compile(&["proto/twitter_clone.proto"], &["proto"])?;
 
     tonic_build::compile_protos("proto/twitter_clone.proto")?;
-    
     Ok(())
 }

@@ -5,6 +5,7 @@ use sqlx::types::chrono;
 use chrono::{NaiveDateTime, Utc};
 use jsonwebtoken::{encode, EncodingKey, Header};
 use std::env;
+use std::time::SystemTime;
 use sqlx::encode::IsNull::No;
 use crate::interceptors::auth_interceptor::JwtClaims;
 
@@ -51,6 +52,22 @@ impl DatabaseModel for UserModel {
 impl UserModel{
     pub fn get_id(&self) -> i32 {
         self.id
+    }
+    
+    pub async fn fetch_by_id(id: i32) -> Result<Self, Error>{
+        let mut con = get_database_connection().await?;
+        let user_data = sqlx::query!("SELECT * FROM user_table WHERE id = $1;", id)
+            .fetch_one(&mut con)
+            .await?;
+        
+        Ok(UserModel{
+            id: user_data.id,
+            first_name: user_data.first_name,
+            last_name: user_data.last_name,
+            email: user_data.email,
+            active: user_data.active
+        })
+        
     }
 
     pub async fn fetch_from_token (token: &str) -> Result<Self, Error> {
@@ -274,7 +291,7 @@ impl DatabaseModel for TweetModel {
 
 
 impl TweetModel{
-    fn get_id(&self) -> i32{
+    pub fn get_id(&self) -> i32{
         self.id
     }
 
@@ -316,6 +333,26 @@ impl TweetModel{
         let retval = Self::get_by_id(res.id).await?;
         return Ok(retval);
     }
+    
+    pub async fn get_tweets_by_user_id(user_id: i32, page: i32, limit: i32) -> Result<Vec<TweetModel>, Error>{
+        let mut con = get_database_connection().await?;
+        let offset = (page - 1) * limit;
+        let res = sqlx::query!("SELECT * FROM  tweet_table WHERE user_id = $1 ORDER BY id DESC LIMIT $2 OFFSET $3;", user_id, i64::from(limit), i64::from(offset))
+            .fetch_all(&mut con)
+            .await?;
+
+        Ok(res.into_iter().map(|record|{
+            TweetModel{
+                id: record.id,
+                parent_id: record.parent_id,
+                title: record.title,
+                content: record.content,
+                user_id: record.user_id
+            }
+        }).collect())
+    }
+    
+    
 }
 
 #[derive(Debug)]
