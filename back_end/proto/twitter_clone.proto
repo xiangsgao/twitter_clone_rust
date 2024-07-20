@@ -51,6 +51,7 @@ message GetTweetResponse{
   repeated TweetRecord tweets = 1;
   int32 page = 2;
   int32 limit = 3;
+  int64 total = 4;
 
 }
 

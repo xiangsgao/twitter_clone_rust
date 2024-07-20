@@ -1,5 +1,4 @@
-use std::time::{SystemTime, UNIX_EPOCH};
-use chrono::Utc;
+use std::time::{SystemTime};
 use prost_types::Timestamp;
 use tonic::{Request, Response, Status};
 use crate::database::models::{DatabaseModel, TweetModel, UserModel};
@@ -108,7 +107,7 @@ impl Tweet for TweetService{
         let fields = request.get_ref();
         let (page, limit, user_id) = (fields.page, fields.limit, fields.user_id);
         
-        let tweets = match TweetModel::get_tweets_by_user_id(user_id, page, limit).await{
+        let (tweets, total) = match TweetModel::get_tweets_by_user_id(user_id, page, limit).await{
             Ok(tweets) => tweets,
             Err(_) =>{
                 return Err(Status::internal("failed to get tweets"));
@@ -121,8 +120,8 @@ impl Tweet for TweetService{
                 content: tweet.content,
                 title: tweet.title,
                 user_id,
-                created_at: Some(Timestamp::from(SystemTime::from(Utc::now()))),
-                updated_at: Some(Timestamp::from(SystemTime::from(Utc::now()))),
+                created_at: Some(Timestamp::from(SystemTime::from(tweet.created_at.and_utc()))),
+                updated_at: Some(Timestamp::from(SystemTime::from(tweet.updated_at.and_utc()))),
                 parent_id: tweet.parent_id,
             }
         }).collect();
@@ -131,10 +130,12 @@ impl Tweet for TweetService{
             tweets,
             page,
             limit,
+            total
         })) 
     }
 
     async fn get_all_tweet(&self, request: Request<GetAllTweetRequest>) -> Result<Response<GetTweetResponse>, Status> {
-        todo!()
+        let fields = request.get_ref();
+        let (page, limit) = (fields.page, fields.limit);
     }
 }

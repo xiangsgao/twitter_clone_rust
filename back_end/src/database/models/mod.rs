@@ -255,7 +255,9 @@ pub struct TweetModel{
     pub user_id: i32,
     pub content: String,
     pub title: String,
-    pub parent_id: Option<i32>
+    pub parent_id: Option<i32>,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime
 }
 
 impl DatabaseModel for TweetModel {
@@ -306,7 +308,9 @@ impl TweetModel{
             parent_id: record.parent_id,
             title: record.title,
             content: record.content,
-            user_id: record.user_id
+            user_id: record.user_id,
+            created_at: record.create_at,
+            updated_at: record.updated_at
         });
     }
     
@@ -321,7 +325,9 @@ impl TweetModel{
             parent_id: record.parent_id,
             title: record.title,
             content: record.content,
-            user_id: record.user_id
+            user_id: record.user_id,
+            created_at: record.create_at,
+            updated_at: record.updated_at
         });
     }
     
@@ -334,22 +340,30 @@ impl TweetModel{
         return Ok(retval);
     }
     
-    pub async fn get_tweets_by_user_id(user_id: i32, page: i32, limit: i32) -> Result<Vec<TweetModel>, Error>{
+    pub async fn get_tweets_by_user_id(user_id: i32, page: i32, limit: i32) -> Result<(Vec<TweetModel>, i64), Error>{
         let mut con = get_database_connection().await?;
         let offset = (page - 1) * limit;
-        let res = sqlx::query!("SELECT * FROM  tweet_table WHERE user_id = $1 ORDER BY id DESC LIMIT $2 OFFSET $3;", user_id, i64::from(limit), i64::from(offset))
+        let res = sqlx::query!("SELECT * FROM tweet_table WHERE user_id = $1 ORDER BY id DESC LIMIT $2 OFFSET $3;", user_id, i64::from(limit), i64::from(offset))
             .fetch_all(&mut con)
             .await?;
-
-        Ok(res.into_iter().map(|record|{
+        
+        let total = sqlx::query!("SELECT COUNT(*) as total FROM tweet_table where user_id = $1;", user_id)
+            .fetch_one(&mut con)
+            .await?;
+        
+        let tweets = res.into_iter().map(|record|{
             TweetModel{
                 id: record.id,
                 parent_id: record.parent_id,
                 title: record.title,
                 content: record.content,
-                user_id: record.user_id
+                user_id: record.user_id,
+                created_at: record.create_at,
+                updated_at: record.updated_at
             }
-        }).collect())
+        }).collect();
+
+        Ok((tweets, total.total.unwrap_or(0)))
     }
     
     
