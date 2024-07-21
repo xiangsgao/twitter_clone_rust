@@ -6,8 +6,9 @@ use chrono::{NaiveDateTime, Utc};
 use jsonwebtoken::{encode, EncodingKey, Header};
 use std::env;
 use std::time::SystemTime;
-use sqlx::encode::IsNull::No;
+use prost_types::Timestamp;
 use crate::interceptors::auth_interceptor::JwtClaims;
+use crate::services::tweet::proto::TweetRecord;
 
 
 pub trait DatabaseModel {
@@ -364,6 +365,47 @@ impl TweetModel{
         }).collect();
 
         Ok((tweets, total.total.unwrap_or(0)))
+    }
+    
+    pub async fn get_all_tweets(page: i32, limit: i32) -> Result<(Vec<TweetModel>, i64), Error>{
+        let mut con = get_database_connection().await?;
+        let offset = (page - 1) * limit;
+        let res = sqlx::query!("SELECT * FROM tweet_table ORDER BY id DESC LIMIT $1 OFFSET $2;", i64::from(limit), i64::from(offset))
+            .fetch_all(&mut con)
+            .await?;
+
+        let total = sqlx::query!("SELECT COUNT(*) as total FROM tweet_table;")
+            .fetch_one(&mut con)
+            .await?;
+
+        let tweets = res.into_iter().map(|record|{
+            TweetModel{
+                id: record.id,
+                parent_id: record.parent_id,
+                title: record.title,
+                content: record.content,
+                user_id: record.user_id,
+                created_at: record.create_at,
+                updated_at: record.updated_at
+            }
+        }).collect();
+
+        Ok((tweets, total.total.unwrap_or(0)))
+    }
+    
+    pub fn to_tweet_records(tweet_models: Vec<TweetModel>)-> Vec<TweetRecord>{
+        let tweets: Vec<TweetRecord> = tweet_models.into_iter().map(|tweet|{
+            TweetRecord{
+                id: tweet.get_id(),
+                content: tweet.content,
+                title: tweet.title,
+                user_id: tweet.user_id,
+                created_at: Some(Timestamp::from(SystemTime::from(tweet.created_at.and_utc()))),
+                updated_at: Some(Timestamp::from(SystemTime::from(tweet.updated_at.and_utc()))),
+                parent_id: tweet.parent_id,
+            }
+        }).collect();
+        tweets
     }
     
     

@@ -113,18 +113,8 @@ impl Tweet for TweetService{
                 return Err(Status::internal("failed to get tweets"));
             }
         };
-        
-        let tweets: Vec<TweetRecord> = tweets.into_iter().map(|tweet|{
-            TweetRecord{
-                id: tweet.get_id(),
-                content: tweet.content,
-                title: tweet.title,
-                user_id,
-                created_at: Some(Timestamp::from(SystemTime::from(tweet.created_at.and_utc()))),
-                updated_at: Some(Timestamp::from(SystemTime::from(tweet.updated_at.and_utc()))),
-                parent_id: tweet.parent_id,
-            }
-        }).collect();
+
+        let tweets: Vec<TweetRecord> = TweetModel::to_tweet_records(tweets);
 
         Ok(Response::new(GetTweetResponse{
             tweets,
@@ -137,5 +127,20 @@ impl Tweet for TweetService{
     async fn get_all_tweet(&self, request: Request<GetAllTweetRequest>) -> Result<Response<GetTweetResponse>, Status> {
         let fields = request.get_ref();
         let (page, limit) = (fields.page, fields.limit);
+        let (tweets, total) = match TweetModel::get_all_tweets(page, limit).await{
+            Ok(tweets) => tweets,
+            Err(_) =>{
+                return Err(Status::internal("failed to get tweets"));
+            }
+        };
+        let tweets: Vec<TweetRecord> = TweetModel::to_tweet_records(tweets);
+
+        Ok(Response::new(GetTweetResponse{
+            tweets,
+            page,
+            limit,
+            total
+        }))
+
     }
 }
