@@ -1,2 +1,2 @@
 pub mod user;
-mod tweet;
+pub mod tweet;

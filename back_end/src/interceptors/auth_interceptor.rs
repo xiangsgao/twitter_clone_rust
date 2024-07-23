@@ -22,8 +22,7 @@ const PROTECTED_ROUTE: [&'static str; 8] = [
     "/twitter_clone.Tweet/CreateTweet",
     "/twitter_clone.Tweet/DeleteTweet",
     "/twitter_clone.Tweet/EditTweet",
-    "/twitter_clone.Tweet/GetTweetByUser"
-
+    "/twitter_clone.Tweet/GetTweetByUser",
 ];
 
 pub mod service{

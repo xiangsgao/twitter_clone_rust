@@ -124,23 +124,23 @@ impl Tweet for TweetService{
         })) 
     }
 
-    async fn get_all_tweet(&self, request: Request<GetAllTweetRequest>) -> Result<Response<GetTweetResponse>, Status> {
-        let fields = request.get_ref();
-        let (page, limit) = (fields.page, fields.limit);
-        let (tweets, total) = match TweetModel::get_all_tweets(page, limit).await{
-            Ok(tweets) => tweets,
-            Err(_) =>{
-                return Err(Status::internal("failed to get tweets"));
-            }
-        };
-        let tweets: Vec<TweetRecord> = TweetModel::to_tweet_records(tweets);
-
-        Ok(Response::new(GetTweetResponse{
-            tweets,
-            page,
-            limit,
-            total
-        }))
-
-    }
+    // async fn get_all_tweet(&self, request: Request<GetAllTweetRequest>) -> Result<Response<GetTweetResponse>, Status> {
+    //     let fields = request.get_ref();
+    //     let (page, limit) = (fields.page, fields.limit);
+    //     let (tweets, total) = match TweetModel::get_all_tweets(page, limit).await{
+    //         Ok(tweets) => tweets,
+    //         Err(_) =>{
+    //             return Err(Status::internal("failed to get tweets"));
+    //         }
+    //     };
+    //     let tweets: Vec<TweetRecord> = TweetModel::to_tweet_records(tweets);
+    //
+    //     Ok(Response::new(GetTweetResponse{
+    //         tweets,
+    //         page,
+    //         limit,
+    //         total
+    //     }))
+    //
+    // }
 }
