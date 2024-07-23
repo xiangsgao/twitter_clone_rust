@@ -10,6 +10,7 @@ use tonic::transport::Server;
 use tonic_middleware::RequestInterceptorLayer;
 use crate::interceptors::auth_interceptor::{AuthInterceptor};
 use crate::interceptors::auth_interceptor::service::AuthServiceImpl;
+use crate::services::tweet::proto::tweet_server::TweetServer;
 use crate::services::user::proto::user_server::UserServer;
 
 #[derive(Parser, Debug)]
@@ -30,6 +31,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let addr = format!("[::1]:{port}").parse()?;
 
     let user_service = tonic_web::enable(UserServer::new(services::user::UserService::default()));
+    let tweet_service = tonic_web::enable(TweetServer::new(services::tweet::TweetService::default()));
 
 
 
@@ -60,6 +62,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .layer(tower_http::cors::CorsLayer::permissive())
         .layer(RequestInterceptorLayer::new(auth_interceptor.clone()))
         .add_service(user_service)
+        .add_service(tweet_service)
         .add_service(user_reflection)
         .serve(addr)
         .await?;
