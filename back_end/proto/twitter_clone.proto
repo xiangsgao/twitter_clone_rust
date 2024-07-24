@@ -19,6 +19,15 @@ service Tweet{
   rpc EditTweet(EditTweetRequest) returns (EditTweetResponse);
   rpc GetTweetByUser(GetTweetByUserRequest) returns (GetTweetResponse);
   rpc GetAllTweet(GetAllTweetRequest) returns (GetTweetResponse);
+  rpc LikeTweet(LikeTweetRequest) returns (LikeTweetResponse);
+}
+
+message LikeTweetRequest{
+  int32 tweet_id = 1;
+}
+
+message LikeTweetResponse{
+  bool success = 1;
 }
 
 enum TweetSort{

@@ -1,8 +1,9 @@
 use tonic::{Request, Response, Status};
 use crate::database::models::{DatabaseModel, TweetModel, UserModel};
-use crate::services::tweet::proto::{CreateTweetRequest, CreateTweetResponse, DeleteTweetRequest, DeleteTweetResponse, EditTweetRequest, EditTweetResponse, GetAllTweetRequest, GetTweetByUserRequest, GetTweetResponse};
+use crate::services::tweet::proto::{CreateTweetRequest, CreateTweetResponse, DeleteTweetRequest, DeleteTweetResponse, EditTweetRequest, EditTweetResponse, GetAllTweetRequest, GetTweetByUserRequest, GetTweetResponse, LikeTweetRequest};
 use crate::services::tweet::proto::tweet_server::Tweet;
 use crate::services::tweet::proto::TweetRecord;
+use crate::services::tweet::proto::LikeTweetResponse;
 
 pub mod proto {
     tonic::include_proto!("twitter_clone");
@@ -140,5 +141,9 @@ impl Tweet for TweetService{
             total
         }))
 
+    }
+
+    async fn like_tweet(&self, request: Request<LikeTweetRequest>)-> Result<Response<LikeTweetResponse>, Status>{
+        todo!("implement")
     }
 }

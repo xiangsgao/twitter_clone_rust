@@ -5,9 +5,9 @@ let's make a ~Twitter~ X clone!
 * ~login user~ done
 * ~register user~ done
 * ~logout user~ done
-* post tweet
-* delete tweet
-* edit tweet
+* ~post tweet~ done
+* ~delete tweet~ done
+* ~edit tweet~ done
 * like tweet
 * ~Follow~ done
 * ~unfollow~ done
