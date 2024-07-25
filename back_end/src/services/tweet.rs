@@ -1,9 +1,10 @@
 use tonic::{Request, Response, Status};
 use crate::database::models::{DatabaseModel, LikeModel, TweetModel, UserModel};
-use crate::services::tweet::proto::{CreateTweetRequest, CreateTweetResponse, DeleteTweetRequest, DeleteTweetResponse, EditTweetRequest, EditTweetResponse, GetAllTweetRequest, GetTweetByUserRequest, GetTweetResponse, LikeTweetRequest};
+use crate::services::tweet::proto::{CreateTweetRequest, CreateTweetResponse, DeleteTweetRequest, DeleteTweetResponse, EditTweetRequest, EditTweetResponse, GetAllTweetRequest, GetTweetByUserRequest, GetTweetResponse, LikeTweetRequest, UnlikeTweetRequest};
 use crate::services::tweet::proto::tweet_server::Tweet;
 use crate::services::tweet::proto::TweetRecord;
 use crate::services::tweet::proto::LikeTweetResponse;
+use crate::services::tweet::proto::UnlikeTweetResponse;
 
 pub mod proto {
     tonic::include_proto!("twitter_clone");
@@ -159,6 +160,34 @@ impl Tweet for TweetService{
         }
         
         Ok(Response::new(LikeTweetResponse{
+            success: true
+        }))
+    }
+
+    async fn unlike_tweet(&self, request: Request<UnlikeTweetRequest>)-> Result<Response<UnlikeTweetResponse>, Status>{
+        let tweet_id = request.get_ref().tweet_id;
+        let user: &UserModel = match request.extensions().get::<UserModel>(){
+            Some(e) => e,
+            None => {
+                return Err(Status::unauthenticated("user not found")); // shouldn't happen, should be caught by the interceptor
+            }
+        };
+        let record = match LikeModel::find_from_ids(user.get_id(), Some(tweet_id), None).await{
+            Ok(e) => e,
+            Err(_) =>{
+                return Err(Status::invalid_argument("failed to find like"));
+            }
+           
+        };
+        
+        match record.update().await{
+            Ok(_) => (),
+            Err(_) =>{
+                return Err(Status::internal("failed to delete like"));
+            }
+        };
+
+        Ok(Response::new(UnlikeTweetResponse{
             success: true
         }))
     }

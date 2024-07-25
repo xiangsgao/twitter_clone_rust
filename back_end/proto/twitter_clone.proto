@@ -20,6 +20,7 @@ service Tweet{
   rpc GetTweetByUser(GetTweetByUserRequest) returns (GetTweetResponse);
   rpc GetAllTweet(GetAllTweetRequest) returns (GetTweetResponse);
   rpc LikeTweet(LikeTweetRequest) returns (LikeTweetResponse);
+  rpc unlikeTweet(UnlikeTweetRequest) returns (UnlikeTweetResponse);
 }
 
 message LikeTweetRequest{
@@ -27,6 +28,15 @@ message LikeTweetRequest{
 }
 
 message LikeTweetResponse{
+  bool success = 1;
+}
+
+
+message UnlikeTweetRequest{
+  int32 tweet_id = 1;
+}
+
+message UnlikeTweetResponse{
   bool success = 1;
 }
 
