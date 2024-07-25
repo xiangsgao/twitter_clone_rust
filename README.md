@@ -2,6 +2,8 @@
 let's make a ~Twitter~ X clone!
 
 # Minimum viable requirements
+
+Backend
 * ~login user~ done
 * ~register user~ done
 * ~logout user~ done
@@ -17,3 +19,6 @@ let's make a ~Twitter~ X clone!
 * most popular and most follow at the top
 * some very basic web UI to test all of these 
 * unflattering image of Elon Musk in the home page. 
+
+Frontend
+TBD
