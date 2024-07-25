@@ -1,5 +1,5 @@
 use tonic::{Request, Response, Status};
-use crate::database::models::{DatabaseModel, TweetModel, UserModel};
+use crate::database::models::{DatabaseModel, LikeModel, TweetModel, UserModel};
 use crate::services::tweet::proto::{CreateTweetRequest, CreateTweetResponse, DeleteTweetRequest, DeleteTweetResponse, EditTweetRequest, EditTweetResponse, GetAllTweetRequest, GetTweetByUserRequest, GetTweetResponse, LikeTweetRequest};
 use crate::services::tweet::proto::tweet_server::Tweet;
 use crate::services::tweet::proto::TweetRecord;
@@ -144,6 +144,22 @@ impl Tweet for TweetService{
     }
 
     async fn like_tweet(&self, request: Request<LikeTweetRequest>)-> Result<Response<LikeTweetResponse>, Status>{
-        todo!("implement")
+        let tweet_id = request.get_ref().tweet_id;
+        let user: &UserModel = match request.extensions().get::<UserModel>(){
+            Some(e) => e,
+            None => {
+                return Err(Status::unauthenticated("user not found")); // shouldn't happen, should be caught by the interceptor
+            }
+        };
+        match LikeModel::create_new(user.get_id(), Some(tweet_id), None).await{
+            Err(_) =>{
+                return Err(Status::internal("failed to create like")); 
+            }
+            _ => ()
+        }
+        
+        Ok(Response::new(LikeTweetResponse{
+            success: true
+        }))
     }
 }

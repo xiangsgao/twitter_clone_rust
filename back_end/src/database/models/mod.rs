@@ -499,3 +499,68 @@ impl FollowerModel {
     }
 
 }
+
+pub struct LikeModel{
+    id: i32,
+    user_id: i32,
+    tweet_id: Option<i32>,
+    comment_id: Option<i32>,
+}
+
+impl DatabaseModel for LikeModel {
+    type Model = ();
+
+    async fn delete(&self) -> Result<(), Error> {
+        let mut con = get_database_connection().await?;
+        sqlx::query!("DELETE FROM follower_table WHERE id = $1", self.id)
+            .execute(&mut  con)
+            .await?;
+        Ok(())
+    }
+
+    async fn update(&self) -> Result<(), Error> {
+        let mut con = get_database_connection().await?;
+
+        sqlx::query!("UPDATE like_table SET user_id = $1, tweet_id = $2, comment_id = $3, updated_at = $4 WHERE id = $5", self.user_id, self.tweet_id, self.comment_id , Utc::now().naive_utc(), self.id)
+            .execute(&mut  con)
+            .await?;
+
+        con.close().await?;
+
+        Ok(())
+    }
+}
+
+impl LikeModel {
+    pub async fn find_from_ids(user_id: i32, tweet_id: Option<i32>, comment_id: Option<i32>) -> Result<LikeModel, Error>{
+        let mut con = get_database_connection().await?;
+        let record =  sqlx::query!("SELECT * FROM like_table WHERE user_id = $1 AND comment_id = $2 AND tweet_id = $3" , user_id, comment_id, tweet_id)
+            .fetch_one(&mut  con)
+            .await?;
+        let retval = LikeModel{
+            id: record.id,
+            user_id: record.user_id,
+            tweet_id: record.tweet_id,
+            comment_id: record.comment_id
+        };
+
+        con.close().await?;
+        Ok(retval)
+    }
+    
+    pub async fn create_new(user_id: i32, tweet_id: Option<i32>, comment_id: Option<i32>) -> Result<LikeModel, Error>{
+        let mut con = get_database_connection().await?;
+        let time_stamp = Utc::now().naive_utc();
+        let record = sqlx::query!("INSERT INTO like_table (user_id, comment_id, tweet_id, create_at) VALUES ($1, $2, $3, $4) RETURNING  *;", user_id, comment_id, tweet_id, time_stamp)
+            .fetch_one(&mut con).await?;
+        
+        con.close().await?;
+        
+        Ok(LikeModel{
+            id: record.id,
+            user_id: record.user_id,
+            tweet_id: record.tweet_id,
+            comment_id: record.comment_id
+        })
+    }
+}

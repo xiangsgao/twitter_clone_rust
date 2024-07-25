@@ -2,6 +2,7 @@ mod services;
 mod interceptors;
 mod tower_layers;
 mod database;
+mod utils;
 
 use std::error::Error;
 use clap::Parser;
