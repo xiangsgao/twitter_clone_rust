@@ -8,7 +8,10 @@ let's make a ~Twitter~ X clone!
 * ~post tweet~ done
 * ~delete tweet~ done
 * ~edit tweet~ done
-* like tweet
+* ~like/unlike tweet~ done
+* Add comment to tweet
+* Remove comment to tweet
+* like/unlike comment to tweet
 * ~Follow~ done
 * ~unfollow~ done
 * most popular and most follow at the top
