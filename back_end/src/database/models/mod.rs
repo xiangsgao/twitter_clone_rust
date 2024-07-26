@@ -258,7 +258,8 @@ pub struct TweetModel{
     pub title: String,
     pub parent_id: Option<i32>,
     pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime
+    pub updated_at: NaiveDateTime,
+    likes: i64
 }
 
 impl DatabaseModel for TweetModel {
@@ -301,7 +302,7 @@ impl TweetModel{
     pub async fn get_by_id(tweet_id: i32) -> Result<Self, Error>{
         let mut con = get_database_connection().await?;
 
-        let record = sqlx::query!("SELECT * FROM tweet_table WHERE id = $1;", tweet_id)
+        let record = sqlx::query!("SELECT *, (SELECT COUNT(*) FROM like_table WHERE tweet_id = tweet_table.id) as likes FROM tweet_table WHERE id = $1;", tweet_id)
             .fetch_one(&mut con).await?;
 
         return Ok(TweetModel{
@@ -311,14 +312,15 @@ impl TweetModel{
             content: record.content,
             user_id: record.user_id,
             created_at: record.create_at,
-            updated_at: record.updated_at
+            updated_at: record.updated_at,
+            likes: record.likes.unwrap_or(0)
         });
     }
     
     pub async fn get_by_user_and_id(tweet_id: i32, user_id: i32) -> Result<Self, Error>{
         let mut con = get_database_connection().await?;
 
-        let record = sqlx::query!("SELECT * FROM tweet_table WHERE id = $1 AND user_id = $2;", tweet_id, user_id)
+        let record = sqlx::query!("SELECT *,  (SELECT COUNT(*) FROM like_table WHERE tweet_id = tweet_table.id) as likes FROM tweet_table WHERE id = $1 AND user_id = $2;", tweet_id, user_id)
             .fetch_one(&mut con).await?;
 
         return Ok(TweetModel{
@@ -328,7 +330,8 @@ impl TweetModel{
             content: record.content,
             user_id: record.user_id,
             created_at: record.create_at,
-            updated_at: record.updated_at
+            updated_at: record.updated_at,
+            likes: record.likes.unwrap()
         });
     }
     
@@ -344,7 +347,7 @@ impl TweetModel{
     pub async fn get_tweets_by_user_id(user_id: i32, page: i32, limit: i32) -> Result<(Vec<TweetModel>, i64), Error>{
         let mut con = get_database_connection().await?;
         let offset = (page - 1) * limit;
-        let res = sqlx::query!("SELECT * FROM tweet_table WHERE user_id = $1 ORDER BY id DESC LIMIT $2 OFFSET $3;", user_id, i64::from(limit), i64::from(offset))
+        let res = sqlx::query!("SELECT *,  (SELECT COUNT(*) FROM like_table WHERE tweet_id = tweet_table.id) as likes FROM tweet_table WHERE user_id = $1 ORDER BY id DESC LIMIT $2 OFFSET $3;", user_id, i64::from(limit), i64::from(offset))
             .fetch_all(&mut con)
             .await?;
         
@@ -360,7 +363,8 @@ impl TweetModel{
                 content: record.content,
                 user_id: record.user_id,
                 created_at: record.create_at,
-                updated_at: record.updated_at
+                updated_at: record.updated_at,
+                likes: record.likes.unwrap_or(0)
             }
         }).collect();
 
@@ -370,7 +374,7 @@ impl TweetModel{
     pub async fn get_all_tweets(page: i32, limit: i32) -> Result<(Vec<TweetModel>, i64), Error>{
         let mut con = get_database_connection().await?;
         let offset = (page - 1) * limit;
-        let res = sqlx::query!("SELECT * FROM tweet_table ORDER BY id DESC LIMIT $1 OFFSET $2;", i64::from(limit), i64::from(offset))
+        let res = sqlx::query!("SELECT *, (SELECT COUNT(*) FROM like_table WHERE tweet_id = tweet_table.id) as likes FROM tweet_table  ORDER BY id DESC LIMIT $1 OFFSET $2;", i64::from(limit), i64::from(offset))
             .fetch_all(&mut con)
             .await?;
 
@@ -386,7 +390,8 @@ impl TweetModel{
                 content: record.content,
                 user_id: record.user_id,
                 created_at: record.create_at,
-                updated_at: record.updated_at
+                updated_at: record.updated_at,
+                likes: record.likes.unwrap_or(0)
             }
         }).collect();
 
@@ -403,6 +408,7 @@ impl TweetModel{
                 created_at: Some(Timestamp::from(SystemTime::from(tweet.created_at.and_utc()))),
                 updated_at: Some(Timestamp::from(SystemTime::from(tweet.updated_at.and_utc()))),
                 parent_id: tweet.parent_id,
+                likes: tweet.likes
             }
         }).collect();
         tweets

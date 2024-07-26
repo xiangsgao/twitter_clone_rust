@@ -158,4 +158,5 @@ message TweetRecord{
   google.protobuf.Timestamp created_at = 5;
   google.protobuf.Timestamp updated_at = 6;
   optional int32 parent_id = 7;
+  int64 likes = 8;
 }
