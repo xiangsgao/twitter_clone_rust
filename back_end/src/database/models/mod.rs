@@ -1,4 +1,4 @@
-use sqlx::{Connection, Error, Executor};
+use sqlx::{Connection, Error, Executor, Row};
 use crate::database::database_client::get_database_connection;
 use bcrypt::{hash, DEFAULT_COST, verify};
 use sqlx::types::chrono;
@@ -374,28 +374,40 @@ impl TweetModel{
     pub async fn get_all_tweets(page: i32, limit: i32) -> Result<(Vec<TweetModel>, i64), Error>{
         let mut con = get_database_connection().await?;
         let offset = (page - 1) * limit;
-        let res = sqlx::query!("SELECT *, (SELECT COUNT(*) FROM like_table WHERE tweet_id = tweet_table.id) as likes FROM tweet_table  ORDER BY id DESC LIMIT $1 OFFSET $2;", i64::from(limit), i64::from(offset))
+
+        let query = "SELECT *, \
+                           (SELECT COUNT(*) \
+                            FROM like_table \
+                            WHERE tweet_id = tweet_table.id\
+                           ) as likes \
+                           FROM tweet_table  \
+                           ORDER BY id \
+                           DESC LIMIT $1 OFFSET $2;";
+
+        let res = sqlx::query(&query)
+            .bind(i64::from(limit))
+            .bind(i64::from(offset))
             .fetch_all(&mut con)
             .await?;
 
-        let total = sqlx::query!("SELECT COUNT(*) as total FROM tweet_table;")
+        let total = sqlx::query("SELECT COUNT(*) as total FROM tweet_table;")
             .fetch_one(&mut con)
             .await?;
 
         let tweets = res.into_iter().map(|record|{
             TweetModel{
-                id: record.id,
-                parent_id: record.parent_id,
-                title: record.title,
-                content: record.content,
-                user_id: record.user_id,
-                created_at: record.create_at,
-                updated_at: record.updated_at,
-                likes: record.likes.unwrap_or(0)
+                id: record.get("id"),
+                parent_id: record.get("parent_id"),
+                title: record.get("title"),
+                content: record.get("content"),
+                user_id: record.get("user_id"),
+                created_at: record.get("create_at"),
+                updated_at:  record.get("updated_at"),
+                likes: record.get("likes")
             }
         }).collect();
 
-        Ok((tweets, total.total.unwrap_or(0)))
+        Ok((tweets, total.get("total")))
     }
     
     pub fn to_tweet_records(tweet_models: Vec<TweetModel>)-> Vec<TweetRecord>{
