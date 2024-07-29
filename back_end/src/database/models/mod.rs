@@ -259,7 +259,8 @@ pub struct TweetModel{
     pub parent_id: Option<i32>,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
-    likes: i64
+    likes: i64,
+    liked: Option<bool>
 }
 
 impl DatabaseModel for TweetModel {
@@ -313,7 +314,8 @@ impl TweetModel{
             user_id: record.user_id,
             created_at: record.create_at,
             updated_at: record.updated_at,
-            likes: record.likes.unwrap_or(0)
+            likes: record.likes.unwrap_or(0),
+            liked: None
         });
     }
     
@@ -331,7 +333,8 @@ impl TweetModel{
             user_id: record.user_id,
             created_at: record.create_at,
             updated_at: record.updated_at,
-            likes: record.likes.unwrap()
+            likes: record.likes.unwrap(),
+            liked: None
         });
     }
     
@@ -344,10 +347,19 @@ impl TweetModel{
         return Ok(retval);
     }
     
-    pub async fn get_tweets_by_user_id(user_id: i32, page: i32, limit: i32) -> Result<(Vec<TweetModel>, i64), Error>{
+    // only login user can see his likes
+    pub async fn get_login_user_tweets(user_id: i32, page: i32, limit: i32) -> Result<(Vec<TweetModel>, i64), Error>{
         let mut con = get_database_connection().await?;
         let offset = (page - 1) * limit;
-        let res = sqlx::query!("SELECT *,  (SELECT COUNT(*) FROM like_table WHERE tweet_id = tweet_table.id) as likes FROM tweet_table WHERE user_id = $1 ORDER BY id DESC LIMIT $2 OFFSET $3;", user_id, i64::from(limit), i64::from(offset))
+        let query = "SELECT *,  \
+            (SELECT COUNT(*) FROM like_table WHERE tweet_id = tweet_table.id) as likes, \
+            (SELECT EXISTS(SELECT 1 FROM like_table  WHERE tweet_id = tweet_table.id AND user_id = $1) as liked)\
+            FROM tweet_table WHERE user_id = $2 ORDER BY id DESC LIMIT $3 OFFSET $4;".to_string();
+        let res = sqlx::query(&query)
+            .bind(user_id)
+            .bind(user_id)
+            .bind(limit)
+            .bind(offset)
             .fetch_all(&mut con)
             .await?;
         
@@ -357,14 +369,15 @@ impl TweetModel{
         
         let tweets = res.into_iter().map(|record|{
             TweetModel{
-                id: record.id,
-                parent_id: record.parent_id,
-                title: record.title,
-                content: record.content,
-                user_id: record.user_id,
-                created_at: record.create_at,
-                updated_at: record.updated_at,
-                likes: record.likes.unwrap_or(0)
+                id: record.get("id"),
+                parent_id: record.get("parent_id"),
+                title: record.get("title"),
+                content: record.get("content"),
+                user_id: record.get("user_id"),
+                created_at: record.get("create_at"),
+                updated_at: record.get("updated_at"),
+                likes: record.get("likes"),
+                liked: record.get("liked")
             }
         }).collect();
 
@@ -403,7 +416,8 @@ impl TweetModel{
                 user_id: record.get("user_id"),
                 created_at: record.get("create_at"),
                 updated_at:  record.get("updated_at"),
-                likes: record.get("likes")
+                likes: record.get("likes"),
+                liked: None
             }
         }).collect();
 
@@ -420,7 +434,8 @@ impl TweetModel{
                 created_at: Some(Timestamp::from(SystemTime::from(tweet.created_at.and_utc()))),
                 updated_at: Some(Timestamp::from(SystemTime::from(tweet.updated_at.and_utc()))),
                 parent_id: tweet.parent_id,
-                likes: tweet.likes
+                likes: tweet.likes,
+                liked: tweet.liked
             }
         }).collect();
         tweets

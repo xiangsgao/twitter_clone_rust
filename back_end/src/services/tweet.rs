@@ -1,10 +1,11 @@
 use tonic::{Request, Response, Status};
 use crate::database::models::{DatabaseModel, LikeModel, TweetModel, UserModel};
-use crate::services::tweet::proto::{CreateTweetRequest, CreateTweetResponse, DeleteTweetRequest, DeleteTweetResponse, EditTweetRequest, EditTweetResponse, GetAllTweetRequest, GetTweetByUserRequest, GetTweetResponse, LikeTweetRequest, UnlikeTweetRequest};
+use crate::services::tweet::proto::{CreateTweetRequest, CreateTweetResponse, DeleteTweetRequest, DeleteTweetResponse, EditTweetRequest, EditTweetResponse, GetAllTweetRequest, GetTweetResponse, LikeTweetRequest, UnlikeTweetRequest};
 use crate::services::tweet::proto::tweet_server::Tweet;
 use crate::services::tweet::proto::TweetRecord;
 use crate::services::tweet::proto::LikeTweetResponse;
 use crate::services::tweet::proto::UnlikeTweetResponse;
+use crate::services::tweet::proto::GetLoginTweetRequest;
 
 pub mod proto {
     tonic::include_proto!("twitter_clone");
@@ -103,14 +104,20 @@ impl Tweet for TweetService{
         
     }
 
-    async fn get_tweet_by_user(&self, request: Request<GetTweetByUserRequest>) -> Result<Response<GetTweetResponse>, Status> {
+    async fn get_login_tweet(&self, request: Request<GetLoginTweetRequest>) -> Result<Response<GetTweetResponse>, Status> {
         let fields = request.get_ref();
-        let (page, limit, user_id) = (fields.page, fields.limit, fields.user_id);
+        let (page, limit) = (fields.page, fields.limit);
+        let user: &UserModel = match request.extensions().get::<UserModel>(){
+            Some(e) => e,
+            None => {
+                return Err(Status::unauthenticated("user not found")); // shouldn't happen, should be caught by the interceptor
+            }
+        };
         
-        let (tweets, total) = match TweetModel::get_tweets_by_user_id(user_id, page, limit).await{
+        let (tweets, total) = match TweetModel::get_login_user_tweets(user.get_id(), page, limit).await{
             Ok(tweets) => tweets,
-            Err(_) =>{
-                return Err(Status::internal("failed to get tweets"));
+            Err(err) =>{
+                return Err(Status::internal(err.to_string()));
             }
         };
 

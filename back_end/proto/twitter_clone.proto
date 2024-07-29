@@ -17,7 +17,7 @@ service Tweet{
   rpc CreateTweet(CreateTweetRequest) returns (CreateTweetResponse);
   rpc DeleteTweet(DeleteTweetRequest) returns (DeleteTweetResponse);
   rpc EditTweet(EditTweetRequest) returns (EditTweetResponse);
-  rpc GetTweetByUser(GetTweetByUserRequest) returns (GetTweetResponse);
+  rpc GetLoginTweet(GetLoginTweetRequest) returns (GetTweetResponse);
   rpc GetAllTweet(GetAllTweetRequest) returns (GetTweetResponse);
   rpc LikeTweet(LikeTweetRequest) returns (LikeTweetResponse);
   rpc unlikeTweet(UnlikeTweetRequest) returns (UnlikeTweetResponse);
@@ -58,12 +58,11 @@ message GetAllTweetRequest{
 }
 
 
-message GetTweetByUserRequest{
-  int32 user_id = 1;
-  int32 page = 2;
-  int32 limit = 3;
-  optional TweetFilter filter = 4;
-  optional TweetSort sort = 5;
+message GetLoginTweetRequest{
+  int32 page = 1;
+  int32 limit = 2;
+  optional TweetFilter filter = 3;
+  optional TweetSort sort = 4;
 }
 
 message GetTweetResponse{
@@ -159,4 +158,5 @@ message TweetRecord{
   google.protobuf.Timestamp updated_at = 6;
   optional int32 parent_id = 7;
   int64 likes = 8;
+  optional bool liked = 9;
 }
