@@ -598,21 +598,68 @@ impl LikeModel {
     }
 }
 
-pub struct Comment {
+pub struct CommentModel {
     user_id: i32,
     content: String,
     tweet_id: i32,
     id: i32
 }
 
-impl DatabaseModel for Comment {
+impl DatabaseModel for CommentModel {
     type Model = ();
 
     async fn delete(&self) -> Result<(), Error> {
-        todo!()
+        let mut con = get_database_connection().await?;
+        sqlx::query!("DELETE FROM comment_table WHERE id = $1", self.id)
+            .execute(&mut  con)
+            .await?;
+        Ok(())
     }
 
     async fn update(&self) -> Result<(), Error> {
-        todo!()
+        let mut con = get_database_connection().await?;
+
+        sqlx::query!("UPDATE comment_table SET user_id = $1, content = $2, tweet_id = $3, updated_at = $4 WHERE id = $5", self.user_id, self.content, self.tweet_id , Utc::now().naive_utc(), self.id)
+            .execute(&mut  con)
+            .await?;
+
+        con.close().await?;
+
+        Ok(())
+    }
+}
+
+impl CommentModel {
+    pub async fn get_by_id(comment_id: i32) -> Result<CommentModel, Error> {
+        let mut con = get_database_connection().await?;
+
+        let res = sqlx::query!("SELECT * FROM comment_table WHERE id = $1", comment_id)
+            .fetch_one(&mut  con)
+            .await?;
+
+        con.close().await?;
+
+        Ok(CommentModel{
+            id: res.id,
+            user_id: res.user_id,
+            tweet_id: res.tweet_id,
+            content: res.content
+        })
+    }
+    
+    pub async fn create_new (user_id: i32, content: &str, tweet_id: i32) -> Result<CommentModel, Error> {
+        let mut con = get_database_connection().await?;
+        let time_stamp = Utc::now().naive_utc();
+        let record = sqlx::query!("INSERT INTO comment_table (user_id, tweet_id, content, create_at) VALUES ($1, $2, $3, $4) RETURNING  *;", user_id, tweet_id, content, time_stamp)
+            .fetch_one(&mut con).await?;
+
+        con.close().await?;
+
+        Ok(CommentModel{
+            id: record.id,
+            user_id: record.user_id,
+            content: record.content,
+            tweet_id: record.tweet_id
+        })
     }
 }
