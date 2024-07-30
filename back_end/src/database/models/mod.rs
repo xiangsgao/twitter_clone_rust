@@ -597,3 +597,22 @@ impl LikeModel {
         })
     }
 }
+
+pub struct Comment {
+    user_id: i32,
+    content: String,
+    tweet_id: i32,
+    id: i32
+}
+
+impl DatabaseModel for Comment {
+    type Model = ();
+
+    async fn delete(&self) -> Result<(), Error> {
+        todo!()
+    }
+
+    async fn update(&self) -> Result<(), Error> {
+        todo!()
+    }
+}
