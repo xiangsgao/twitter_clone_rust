@@ -21,7 +21,25 @@ service Tweet{
   rpc GetAllTweet(GetAllTweetRequest) returns (GetTweetResponse);
   rpc LikeTweet(LikeTweetRequest) returns (LikeTweetResponse);
   rpc unlikeTweet(UnlikeTweetRequest) returns (UnlikeTweetResponse);
+  rpc getTweetComments(getTweetCommentRequest) returns (getTweetCommentsResponse);
 }
+
+message getTweetCommentRequest{
+  int64 page = 1;
+  int64 limit = 2;
+  int32 tweet_id = 3;
+  optional PageFilter filter = 4;
+  optional PageSort sort = 5;
+}
+
+message getTweetCommentsResponse{
+  repeated CommentRecord comments = 1;
+  int64 page = 2;
+  int64 limit = 3;
+  int64 total = 4;
+}
+
+
 
 message LikeTweetRequest{
   int32 tweet_id = 1;
@@ -40,12 +58,12 @@ message UnlikeTweetResponse{
   bool success = 1;
 }
 
-enum TweetSort{
+enum PageSort{
   sort_created_at = 0;
   sort_updated_at = 1;
 }
 
-enum TweetFilter{
+enum PageFilter{
   filter_created_at = 0;
   filter_updated_at = 1;
 }
@@ -53,16 +71,16 @@ enum TweetFilter{
 message GetAllTweetRequest{
   int32 page = 1;
   int32 limit = 2;
-  optional TweetFilter filter = 3;
-  optional TweetSort sort = 4;
+  optional PageFilter filter = 3;
+  optional PageSort sort = 4;
 }
 
 
 message GetLoginTweetRequest{
   int32 page = 1;
   int32 limit = 2;
-  optional TweetFilter filter = 3;
-  optional TweetSort sort = 4;
+  optional PageFilter filter = 3;
+  optional PageSort sort = 4;
 }
 
 message GetTweetResponse{
@@ -159,4 +177,12 @@ message TweetRecord{
   optional int32 parent_id = 7;
   int64 likes = 8;
   optional bool liked = 9;
+}
+
+message CommentRecord{
+  int32 id = 1;
+  string content = 2;
+  int32 tweet_id = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
 }

@@ -8,7 +8,7 @@ use std::env;
 use std::time::SystemTime;
 use prost_types::Timestamp;
 use crate::interceptors::auth_interceptor::JwtClaims;
-use crate::services::tweet::proto::TweetRecord;
+use crate::services::tweet::proto::{CommentRecord, TweetRecord};
 
 
 pub trait DatabaseModel {
@@ -602,7 +602,9 @@ pub struct CommentModel {
     user_id: i32,
     content: String,
     tweet_id: i32,
-    id: i32
+    id: i32,
+    created_at: NaiveDateTime,
+    updated_at: NaiveDateTime
 }
 
 impl DatabaseModel for CommentModel {
@@ -627,9 +629,26 @@ impl DatabaseModel for CommentModel {
 
         Ok(())
     }
+    
+ 
 }
 
 impl CommentModel {
+    
+    pub fn to_comment_records(models: Vec<CommentModel>) -> Vec<CommentRecord>{
+        let res: Vec<CommentRecord> = models.into_iter().map(|e|{
+            CommentRecord{
+                id: e.id,
+                tweet_id: e.tweet_id,
+                content: e.content,
+                created_at: Some(Timestamp::from(SystemTime::from(e.created_at.and_utc()))),
+                updated_at: Some(Timestamp::from(SystemTime::from(e.created_at.and_utc()))),
+            }
+        }).collect();
+
+        res
+    }
+    
     pub async fn get_by_id(comment_id: i32) -> Result<CommentModel, Error> {
         let mut con = get_database_connection().await?;
 
@@ -643,8 +662,37 @@ impl CommentModel {
             id: res.id,
             user_id: res.user_id,
             tweet_id: res.tweet_id,
-            content: res.content
+            content: res.content,
+            created_at: res.create_at,
+            updated_at: res.updated_at
         })
+    }
+
+    pub async fn get_by_tweet_id(tweet_id: i32, page: i64, limit: i64) -> Result<(Vec<CommentModel>, i64), Error> {
+        let mut con = get_database_connection().await?;
+        let offset = (page - 1) * limit;
+        let res = sqlx::query!("SELECT * FROM comment_table WHERE tweet_id = $1 ORDER BY id DESC LIMIT $2 OFFSET $3;", tweet_id, limit, offset)
+            .fetch_all(&mut  con)
+            .await?;
+        
+        let total = sqlx::query!("SELECT COUNT(*) as total FROM comment_table WHERE tweet_id = $1", tweet_id)
+                    .fetch_one(&mut con)
+                    .await?;
+
+        con.close().await?;
+        
+        let records: Vec<CommentModel> = res.into_iter().map(|res|{
+            CommentModel{
+                id: res.id,
+                user_id: res.user_id,
+                tweet_id: res.tweet_id,
+                content: res.content,
+                created_at: res.create_at,
+                updated_at: res.updated_at
+            }
+        }).collect();
+
+        Ok((records, total.total.unwrap_or(0)))
     }
     
     pub async fn create_new (user_id: i32, content: &str, tweet_id: i32) -> Result<CommentModel, Error> {
@@ -659,7 +707,12 @@ impl CommentModel {
             id: record.id,
             user_id: record.user_id,
             content: record.content,
-            tweet_id: record.tweet_id
+            tweet_id: record.tweet_id,
+            created_at: record.create_at,
+            updated_at: record.updated_at
         })
     }
+    
+    
+    
 }

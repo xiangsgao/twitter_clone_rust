@@ -1,11 +1,12 @@
 use tonic::{Request, Response, Status};
-use crate::database::models::{DatabaseModel, LikeModel, TweetModel, UserModel};
-use crate::services::tweet::proto::{CreateTweetRequest, CreateTweetResponse, DeleteTweetRequest, DeleteTweetResponse, EditTweetRequest, EditTweetResponse, GetAllTweetRequest, GetTweetResponse, LikeTweetRequest, UnlikeTweetRequest};
+use crate::database::models::{CommentModel, DatabaseModel, LikeModel, TweetModel, UserModel};
+use crate::services::tweet::proto::{CreateTweetRequest, CreateTweetResponse, DeleteTweetRequest, DeleteTweetResponse, EditTweetRequest, EditTweetResponse, GetAllTweetRequest, GetTweetCommentsResponse, GetTweetResponse, LikeTweetRequest, UnlikeTweetRequest};
 use crate::services::tweet::proto::tweet_server::Tweet;
 use crate::services::tweet::proto::TweetRecord;
 use crate::services::tweet::proto::LikeTweetResponse;
 use crate::services::tweet::proto::UnlikeTweetResponse;
 use crate::services::tweet::proto::GetLoginTweetRequest;
+use crate::services::tweet::proto::GetTweetCommentRequest;
 
 pub mod proto {
     tonic::include_proto!("twitter_clone");
@@ -196,6 +197,26 @@ impl Tweet for TweetService{
 
         Ok(Response::new(UnlikeTweetResponse{
             success: true
+        }))
+    }
+
+    async fn get_tweet_comments(&self, request: Request<GetTweetCommentRequest>)-> Result<Response<GetTweetCommentsResponse>, Status>{
+        
+        let fields = request.get_ref();
+        let (tweet_id, page, limit) = (fields.tweet_id, fields.limit, fields.page);
+        let (records, total) = match CommentModel::get_by_tweet_id(tweet_id, page, limit).await{
+            Ok(e) => e,
+            Err(_) => {
+                return Err(Status::internal("failed to get comments"));
+            }
+        };
+        
+        let converted = CommentModel::to_comment_records(records);
+        Ok(Response::new(GetTweetCommentsResponse{
+            comments: converted,
+            page,
+            limit,
+            total,
         }))
     }
 }
