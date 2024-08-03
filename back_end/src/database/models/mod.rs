@@ -260,6 +260,7 @@ pub struct TweetModel{
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
     likes: i64,
+    comments: i64,
     liked: Option<bool>
 }
 
@@ -303,7 +304,7 @@ impl TweetModel{
     pub async fn get_by_id(tweet_id: i32) -> Result<Self, Error>{
         let mut con = get_database_connection().await?;
 
-        let record = sqlx::query!("SELECT *, (SELECT COUNT(*) FROM like_table WHERE tweet_id = tweet_table.id) as likes FROM tweet_table WHERE id = $1;", tweet_id)
+        let record = sqlx::query!("SELECT *, (SELECT COUNT(*) FROM like_table WHERE tweet_id = tweet_table.id) as likes,  (SELECT COUNT(*) FROM comment_table WHERE tweet_id = tweet_table.id) as comments FROM tweet_table WHERE id = $1;", tweet_id)
             .fetch_one(&mut con).await?;
 
         return Ok(TweetModel{
@@ -315,14 +316,15 @@ impl TweetModel{
             created_at: record.create_at,
             updated_at: record.updated_at,
             likes: record.likes.unwrap_or(0),
-            liked: None
+            liked: None,
+            comments: record.comments.unwrap_or(0)
         });
     }
     
     pub async fn get_by_user_and_id(tweet_id: i32, user_id: i32) -> Result<Self, Error>{
         let mut con = get_database_connection().await?;
 
-        let record = sqlx::query!("SELECT *,  (SELECT COUNT(*) FROM like_table WHERE tweet_id = tweet_table.id) as likes FROM tweet_table WHERE id = $1 AND user_id = $2;", tweet_id, user_id)
+        let record = sqlx::query!("SELECT *,  (SELECT COUNT(*) FROM like_table WHERE tweet_id = tweet_table.id) as likes,  (SELECT COUNT(*) FROM comment_table WHERE tweet_id = tweet_table.id) as comments FROM tweet_table WHERE id = $1 AND user_id = $2;", tweet_id, user_id)
             .fetch_one(&mut con).await?;
 
         return Ok(TweetModel{
@@ -334,7 +336,8 @@ impl TweetModel{
             created_at: record.create_at,
             updated_at: record.updated_at,
             likes: record.likes.unwrap(),
-            liked: None
+            liked: None,
+            comments: record.comments.unwrap_or(0)
         });
     }
     
@@ -353,6 +356,7 @@ impl TweetModel{
         let offset = (page - 1) * limit;
         let query = "SELECT *,  \
             (SELECT COUNT(*) FROM like_table WHERE tweet_id = tweet_table.id) as likes, \
+             (SELECT COUNT(*) FROM comment_table WHERE tweet_id = tweet_table.id) as comments, \
             (SELECT EXISTS(SELECT 1 FROM like_table  WHERE tweet_id = tweet_table.id AND user_id = $1) as liked)\
             FROM tweet_table WHERE user_id = $2 ORDER BY id DESC LIMIT $3 OFFSET $4;".to_string();
         let res = sqlx::query(&query)
@@ -377,7 +381,8 @@ impl TweetModel{
                 created_at: record.get("create_at"),
                 updated_at: record.get("updated_at"),
                 likes: record.get("likes"),
-                liked: record.get("liked")
+                liked: record.get("liked"),
+                comments: record.get("comments")
             }
         }).collect();
 
@@ -392,7 +397,8 @@ impl TweetModel{
                            (SELECT COUNT(*) \
                             FROM like_table \
                             WHERE tweet_id = tweet_table.id\
-                           ) as likes \
+                           ) as likes, \
+                           (SELECT COUNT(*) FROM comment_table WHERE tweet_id = tweet_table.id) as comments \
                            FROM tweet_table  \
                            ORDER BY id \
                            DESC LIMIT $1 OFFSET $2;";
@@ -417,7 +423,8 @@ impl TweetModel{
                 created_at: record.get("create_at"),
                 updated_at:  record.get("updated_at"),
                 likes: record.get("likes"),
-                liked: None
+                liked: None,
+                comments: record.get("comments")
             }
         }).collect();
 
@@ -435,7 +442,8 @@ impl TweetModel{
                 updated_at: Some(Timestamp::from(SystemTime::from(tweet.updated_at.and_utc()))),
                 parent_id: tweet.parent_id,
                 likes: tweet.likes,
-                liked: tweet.liked
+                liked: tweet.liked,
+                comments: tweet.comments
             }
         }).collect();
         tweets
