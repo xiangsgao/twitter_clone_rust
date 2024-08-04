@@ -1,6 +1,6 @@
 use tonic::{Request, Response, Status};
 use crate::database::models::{CommentModel, DatabaseModel, LikeModel, TweetModel, UserModel};
-use crate::services::tweet::proto::{CreateTweetRequest, CreateTweetResponse, DeleteTweetRequest, DeleteTweetResponse, EditTweetRequest, EditTweetResponse, GetAllTweetRequest, GetTweetCommentsResponse, GetTweetResponse, LikeTweetRequest, UnlikeTweetRequest};
+use crate::services::tweet::proto::{CreateTweetCommentRequest, CreateTweetCommentResponse, CreateTweetRequest, CreateTweetResponse, DeleteTweetCommentRequest, DeleteTweetCommentResponse, DeleteTweetRequest, DeleteTweetResponse, EditTweetRequest, EditTweetResponse, GetAllTweetRequest, GetTweetCommentsResponse, GetTweetResponse, LikeTweetCommentRequest, LikeTweetCommentResponse, LikeTweetRequest, UnlikeTweetRequest};
 use crate::services::tweet::proto::tweet_server::Tweet;
 use crate::services::tweet::proto::TweetRecord;
 use crate::services::tweet::proto::LikeTweetResponse;
@@ -218,6 +218,18 @@ impl Tweet for TweetService{
             limit,
             total,
         }))
+    }
+
+    async fn create_tweet_comment(&self, request: Request<CreateTweetCommentRequest>) -> Result<Response<CreateTweetCommentResponse>, Status> {
+        todo!()
+    }
+
+    async fn delete_tweet_comment(&self, request: Request<DeleteTweetCommentRequest>) -> Result<Response<DeleteTweetCommentResponse>, Status> {
+        todo!()
+    }
+
+    async fn like_tweet_comment(&self, request: Request<LikeTweetCommentRequest>) -> Result<Response<LikeTweetCommentResponse>, Status> {
+        todo!()
     }
     
     

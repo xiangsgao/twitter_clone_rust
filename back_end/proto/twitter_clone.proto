@@ -45,6 +45,7 @@ message DeleteTweetCommentResponse{
 
 message CreateTweetCommentRequest{
   int32 tweet_id = 1;
+  string content = 2;
 }
 
 message CreateTweetCommentResponse{
