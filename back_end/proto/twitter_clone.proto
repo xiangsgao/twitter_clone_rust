@@ -21,10 +21,38 @@ service Tweet{
   rpc GetAllTweet(GetAllTweetRequest) returns (GetTweetResponse);
   rpc LikeTweet(LikeTweetRequest) returns (LikeTweetResponse);
   rpc unlikeTweet(UnlikeTweetRequest) returns (UnlikeTweetResponse);
-  rpc getTweetComments(getTweetCommentRequest) returns (getTweetCommentsResponse);
+  rpc getTweetComments(GetTweetCommentRequest) returns (GetTweetCommentsResponse);
+  rpc createTweetComment(CreateTweetCommentRequest) returns (CreateTweetCommentResponse);
+  rpc deleteTweetComment(DeleteTweetCommentRequest) returns (DeleteTweetCommentResponse);
+  rpc likeTweetComment(LikeTweetCommentRequest) returns (LikeTweetCommentResponse);
 }
 
-message getTweetCommentRequest{
+message LikeTweetCommentRequest{
+  int32 comment_id = 1;
+}
+
+message LikeTweetCommentResponse{
+  bool success = 1;
+}
+
+message DeleteTweetCommentRequest{
+  int32 tweet_id = 1;
+}
+
+message DeleteTweetCommentResponse{
+  bool success = 1;
+}
+
+message CreateTweetCommentRequest{
+  int32 tweet_id = 1;
+}
+
+message CreateTweetCommentResponse{
+  bool  success = 1;
+}
+
+
+message GetTweetCommentRequest{
   int64 page = 1;
   int64 limit = 2;
   int32 tweet_id = 3;
@@ -32,7 +60,7 @@ message getTweetCommentRequest{
   optional PageSort sort = 5;
 }
 
-message getTweetCommentsResponse{
+message GetTweetCommentsResponse{
   repeated CommentRecord comments = 1;
   int64 page = 2;
   int64 limit = 3;
