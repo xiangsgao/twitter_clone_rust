@@ -36,7 +36,7 @@ message LikeTweetCommentResponse{
 }
 
 message DeleteTweetCommentRequest{
-  int32 tweet_id = 1;
+  int32 comment_id = 1;
 }
 
 message DeleteTweetCommentResponse{

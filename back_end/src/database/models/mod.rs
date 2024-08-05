@@ -9,7 +9,23 @@ use std::time::SystemTime;
 use prost_types::Timestamp;
 use crate::interceptors::auth_interceptor::JwtClaims;
 use crate::services::tweet::proto::{CommentRecord, TweetRecord};
+use std::error::Error as StdError;
+use std::fmt::{Display, Formatter};
 
+#[derive(Debug)]
+enum DatabaseError {
+    Base(Error),
+    CustomError(String)
+}
+
+
+impl Display for DatabaseError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl StdError for DatabaseError{}
 
 pub trait DatabaseModel {
     type Model;
@@ -657,7 +673,8 @@ impl CommentModel {
         res
     }
     
-    pub async fn get_by_id(comment_id: i32) -> Result<CommentModel, Error> {
+    
+    pub async fn get_by_id(comment_id: i32, user_id: Option<i32>) -> Result<CommentModel, Box<dyn StdError>> {
         let mut con = get_database_connection().await?;
 
         let res = sqlx::query!("SELECT * FROM comment_table WHERE id = $1", comment_id)
@@ -665,6 +682,12 @@ impl CommentModel {
             .await?;
 
         con.close().await?;
+
+        if let Some(user_id) = user_id{
+            if user_id != res.user_id{
+                return Err(Box::new(DatabaseError::CustomError(String::from("Fail to find user id"))))
+            }
+        }
 
         Ok(CommentModel{
             id: res.id,

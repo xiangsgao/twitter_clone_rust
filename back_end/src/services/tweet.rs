@@ -225,7 +225,28 @@ impl Tweet for TweetService{
     }
 
     async fn delete_tweet_comment(&self, request: Request<DeleteTweetCommentRequest>) -> Result<Response<DeleteTweetCommentResponse>, Status> {
-        todo!()
+        let comment_id = request.get_ref().comment_id;
+        let user: &UserModel = match request.extensions().get::<UserModel>(){
+            Some(e) => e,
+            None => {
+                return Err(Status::unauthenticated("user not found")); // shouldn't happen, should be caught by the interceptor
+            }
+        };
+        
+        let commentModel = match CommentModel::get_by_id(comment_id, Some(user.get_id())).await{
+            Ok(e) => e,
+            Err(_) => return Err(Status::internal("comment not found")),
+        };
+        
+        match commentModel.delete().await{
+            Err(_) => return Err(Status::internal("failed to delete comment")),
+            Ok(_) => ()
+        };
+        
+        Ok(Response::new(DeleteTweetCommentResponse{
+            success: true,
+        }))
+        
     }
 
     async fn like_tweet_comment(&self, request: Request<LikeTweetCommentRequest>) -> Result<Response<LikeTweetCommentResponse>, Status> {
