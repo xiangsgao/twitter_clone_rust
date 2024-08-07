@@ -1,4 +1,4 @@
-use tonic::{Request, Response, Status};
+use tonic::{IntoRequest, Request, Response, Status};
 use crate::database::models::{CommentModel, DatabaseModel, LikeModel, TweetModel, UserModel};
 use crate::services::tweet::proto::{CreateTweetCommentRequest, CreateTweetCommentResponse, CreateTweetRequest, CreateTweetResponse, DeleteTweetCommentRequest, DeleteTweetCommentResponse, DeleteTweetRequest, DeleteTweetResponse, EditTweetRequest, EditTweetResponse, GetAllTweetRequest, GetTweetCommentsResponse, GetTweetResponse, LikeTweetCommentRequest, LikeTweetCommentResponse, LikeTweetRequest, UnlikeTweetRequest};
 use crate::services::tweet::proto::tweet_server::Tweet;
@@ -270,7 +270,24 @@ impl Tweet for TweetService{
     }
 
     async fn like_tweet_comment(&self, request: Request<LikeTweetCommentRequest>) -> Result<Response<LikeTweetCommentResponse>, Status> {
-        todo!()
+        let fields = request.get_ref();
+        let comment_id = fields.comment_id;
+        let user: &UserModel = match request.extensions().get::<UserModel>(){
+            Some(e) => e,
+            None => {
+                return Err(Status::unauthenticated("user not found")); // shouldn't happen, should be caught by the interceptor
+            }
+        };
+        match LikeModel::create_new(user.get_id(), None, Some(comment_id)).await{
+            Ok(_) => (),
+            Err(_) => {
+                return Err(Status::internal("Can not create comment"));
+            }
+        }
+        
+        Ok(Response::new(LikeTweetCommentResponse{
+            success: true
+        }))
     }
     
     
