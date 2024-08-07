@@ -221,7 +221,27 @@ impl Tweet for TweetService{
     }
 
     async fn create_tweet_comment(&self, request: Request<CreateTweetCommentRequest>) -> Result<Response<CreateTweetCommentResponse>, Status> {
-        todo!()
+        let fields = request.get_ref();
+        let (tweet_id, content) = (fields.tweet_id, &fields.content);
+        let user: &UserModel = match request.extensions().get::<UserModel>(){
+            Some(e) => e,
+            None => {
+                return Err(Status::unauthenticated("user not found")); // shouldn't happen, should be caught by the interceptor
+            }
+        };
+        match CommentModel::create_new(user.get_id(), content, tweet_id).await{
+            Ok(_) => (),
+            Err(_) =>{
+                return Err(Status::internal("failed to create tweet"));
+            }
+        }
+        
+        Ok(Response::new(
+            CreateTweetCommentResponse{
+                success: true
+            }
+        ))
+        
     }
 
     async fn delete_tweet_comment(&self, request: Request<DeleteTweetCommentRequest>) -> Result<Response<DeleteTweetCommentResponse>, Status> {
