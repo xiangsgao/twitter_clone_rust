@@ -628,7 +628,8 @@ pub struct CommentModel {
     tweet_id: i32,
     id: i32,
     created_at: NaiveDateTime,
-    updated_at: NaiveDateTime
+    updated_at: NaiveDateTime,
+    likes: i64
 }
 
 impl DatabaseModel for CommentModel {
@@ -667,6 +668,7 @@ impl CommentModel {
                 content: e.content,
                 created_at: Some(Timestamp::from(SystemTime::from(e.created_at.and_utc()))),
                 updated_at: Some(Timestamp::from(SystemTime::from(e.created_at.and_utc()))),
+                likes: e.likes
             }
         }).collect();
 
@@ -677,7 +679,7 @@ impl CommentModel {
     pub async fn get_by_id(comment_id: i32, user_id: Option<i32>) -> Result<CommentModel, Box<dyn StdError>> {
         let mut con = get_database_connection().await?;
 
-        let res = sqlx::query!("SELECT * FROM comment_table WHERE id = $1", comment_id)
+        let res = sqlx::query!("SELECT *, (SELECT COUNT(*) FROM like_table WHERE comment_id = comment_table.id) as likes FROM comment_table WHERE id = $1", comment_id)
             .fetch_one(&mut  con)
             .await?;
 
@@ -695,14 +697,15 @@ impl CommentModel {
             tweet_id: res.tweet_id,
             content: res.content,
             created_at: res.create_at,
-            updated_at: res.updated_at
+            updated_at: res.updated_at,
+            likes: res.likes.unwrap_or(0)
         })
     }
 
     pub async fn get_by_tweet_id(tweet_id: i32, page: i64, limit: i64) -> Result<(Vec<CommentModel>, i64), Error> {
         let mut con = get_database_connection().await?;
         let offset = (page - 1) * limit;
-        let res = sqlx::query!("SELECT * FROM comment_table WHERE tweet_id = $1 ORDER BY id DESC LIMIT $2 OFFSET $3;", tweet_id, limit, offset)
+        let res = sqlx::query!("SELECT *, (SELECT COUNT(*) FROM like_table WHERE comment_id = comment_table.id) as likes FROM comment_table WHERE tweet_id = $1 ORDER BY id DESC LIMIT $2 OFFSET $3;", tweet_id, limit, offset)
             .fetch_all(&mut  con)
             .await?;
         
@@ -719,7 +722,8 @@ impl CommentModel {
                 tweet_id: res.tweet_id,
                 content: res.content,
                 created_at: res.create_at,
-                updated_at: res.updated_at
+                updated_at: res.updated_at,
+                likes: res.likes.unwrap_or(0)
             }
         }).collect();
 
@@ -740,7 +744,8 @@ impl CommentModel {
             content: record.content,
             tweet_id: record.tweet_id,
             created_at: record.create_at,
-            updated_at: record.updated_at
+            updated_at: record.updated_at,
+            likes: 0
         })
     }
     

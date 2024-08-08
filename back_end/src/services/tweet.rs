@@ -1,6 +1,6 @@
 use tonic::{IntoRequest, Request, Response, Status};
 use crate::database::models::{CommentModel, DatabaseModel, LikeModel, TweetModel, UserModel};
-use crate::services::tweet::proto::{CreateTweetCommentRequest, CreateTweetCommentResponse, CreateTweetRequest, CreateTweetResponse, DeleteTweetCommentRequest, DeleteTweetCommentResponse, DeleteTweetRequest, DeleteTweetResponse, EditTweetRequest, EditTweetResponse, GetAllTweetRequest, GetTweetCommentsResponse, GetTweetResponse, LikeTweetCommentRequest, LikeTweetCommentResponse, LikeTweetRequest, UnlikeTweetRequest};
+use crate::services::tweet::proto::{CreateTweetCommentRequest, CreateTweetCommentResponse, CreateTweetRequest, CreateTweetResponse, DeleteTweetCommentRequest, DeleteTweetCommentResponse, DeleteTweetRequest, DeleteTweetResponse, EditTweetRequest, EditTweetResponse, GetAllTweetRequest, GetTweetCommentsResponse, GetTweetResponse, LikeTweetCommentRequest, LikeTweetCommentResponse, LikeTweetRequest, UnlikeTweetCommentRequest, UnlikeTweetCommentResponse, UnlikeTweetRequest};
 use crate::services::tweet::proto::tweet_server::Tweet;
 use crate::services::tweet::proto::TweetRecord;
 use crate::services::tweet::proto::LikeTweetResponse;
@@ -286,6 +286,34 @@ impl Tweet for TweetService{
         }
         
         Ok(Response::new(LikeTweetCommentResponse{
+            success: true
+        }))
+    }
+
+    async fn unlike_tweet_comment(&self, request: Request<UnlikeTweetCommentRequest>) -> Result<Response<UnlikeTweetCommentResponse>, Status> {
+        let fields = request.get_ref();
+        let like_id = fields.like_id;
+        let user: &UserModel = match request.extensions().get::<UserModel>(){
+            Some(e) => e,
+            None => {
+                return Err(Status::unauthenticated("user not found")); // shouldn't happen, should be caught by the interceptor
+            }
+        };
+        let like_model = match LikeModel::find_from_ids(user.get_id(), None, Some(like_id)).await{
+            Ok(e) => e,
+            Err(_) => {
+                return Err(Status::internal("cant find it"));
+            }
+        };
+        
+        match like_model.delete().await {
+            Ok(_) => (),
+            Err(_) => {
+                return Err(Status::internal("cant delete it"));
+            }
+        };
+        
+        Ok(Response::new(UnlikeTweetCommentResponse{
             success: true
         }))
     }
