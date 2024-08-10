@@ -1,5 +1,5 @@
 # ~twitter_clone_rust~ x_clone_rust
-let's make a ~Twitter~ X clone!
+let's make a ~Twitter~ X
 
 # Minimum viable requirements
 
