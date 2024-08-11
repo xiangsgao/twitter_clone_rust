@@ -14,7 +14,7 @@ pub struct JwtClaims {
 }
 
 
-const PROTECTED_ROUTE: [&'static str; 8] = [
+const PROTECTED_ROUTE: [&'static str; 14] = [
     "/twitter_clone.User/LogoutUser",
     "/twitter_clone.User/GetUser",
     "/twitter_clone.User/FollowUser",
@@ -23,6 +23,12 @@ const PROTECTED_ROUTE: [&'static str; 8] = [
     "/twitter_clone.Tweet/DeleteTweet",
     "/twitter_clone.Tweet/EditTweet",
     "/twitter_clone.Tweet/GetLoginTweet",
+    "/twitter_clone.Tweet/LikeTweet",
+    "/twitter_clone.Tweet/UnlikeTweet",
+    "/twitter_clone.Tweet/CreateTweetComment",
+    "/twitter_clone.Tweet/DeleteTweetComment",
+    "/twitter_clone.Tweet/LikeTweetComment",
+    "/twitter_clone.Tweet/UnlikeTweetComment",
 ];
 
 pub mod service{
