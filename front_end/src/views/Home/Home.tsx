@@ -1,11 +1,13 @@
 import {Button} from "antd";
 import {useState} from "react";
+import {APP_URL} from "../../utils/constants.ts";
 
 
 export const Home = () =>{
     const [count, setCount] = useState(0)
     return (
         <>
+            <h1>{APP_URL}</h1>
             <div>
                 <a href="https://vitejs.dev" target="_blank">
                     <img src={'/vite.svg'} className="logo" alt="Vite logo" />
