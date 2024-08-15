@@ -1,6 +1,13 @@
 import {UserClient} from "../../proto/twitter_clone_grpc_pb";
 import {APP_URL} from "../../utils/constants.ts";
-import {LoginUserRequest, LoginUserResponse} from "../../proto/twitter_clone_pb";
+import {
+    FollowRequest,
+    GetUserRequest,
+    LoginUserRequest,
+    LoginUserResponse,
+    LogoutUserRequest,
+    LogoutUserResponse, UserResponse
+} from "../../proto/twitter_clone_pb";
 
 
 class UserService {
@@ -25,13 +32,11 @@ class UserService {
         })
     }
 
-    logoutUser(email: string, password: string): Promise<LoginUserResponse>{
-        const request: LoginUserRequest = new LoginUserRequest()
-            .setEmail(email)
-            .setPassword(password);
+    logoutUser(): Promise<LogoutUserResponse>{
+        const request: LogoutUserRequest = new LogoutUserRequest();
 
         return new Promise((resolve, reject) =>{
-            this.userClient.loginUser(request, {}, (err, response) =>{
+            this.userClient.logoutUser(request, {}, (err, response) =>{
                 if(err){
                     reject(err)
                 }else{
@@ -41,13 +46,37 @@ class UserService {
         })
     }
 
-    getUser(email: string, password: string): Promise<LoginUserResponse>{
-        const request: LoginUserRequest = new LoginUserRequest()
-            .setEmail(email)
-            .setPassword(password);
+    getUser(): Promise<UserResponse>{
+        const request: GetUserRequest = new GetUserRequest();
 
         return new Promise((resolve, reject) =>{
-            this.userClient.loginUser(request, {}, (err, response) =>{
+            this.userClient.getUser(request, {}, (err, response) =>{
+                if(err){
+                    reject(err)
+                }else{
+                    resolve(response)
+                }
+            });
+        });
+    }
+
+    followUser(userId: number): Promise<UserResponse>{
+        const request: FollowRequest = new FollowRequest().setUserId(userId);
+        return new Promise((resolve, reject) =>{
+            this.userClient.followUser(request, {}, (err, response) =>{
+                if(err){
+                    reject(err)
+                }else{
+                    resolve(response)
+                }
+            });
+        })
+    }
+
+    unfollowUser(userId: number): Promise<UserResponse>{
+        const request: FollowRequest = new FollowRequest().setUserId(userId);
+        return new Promise((resolve, reject) =>{
+            this.userClient.unfollowUser(request, {}, (err, response) =>{
                 if(err){
                     reject(err)
                 }else{
