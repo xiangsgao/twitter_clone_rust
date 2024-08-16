@@ -34,7 +34,7 @@ const PROTECTED_ROUTE: [&'static str; 14] = [
 pub mod service{
     use std::collections::HashSet;
     use std::env;
-    use async_trait::async_trait;yarn
+    use async_trait::async_trait;
     use jsonwebtoken::{decode, DecodingKey, Validation};
     use crate::database::models::{TokenModel, UserModel};
     use crate::interceptors::auth_interceptor::JwtClaims;
