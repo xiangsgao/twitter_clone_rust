@@ -18,6 +18,9 @@ Backend
 * ~unfollow~ done
 
 Frontend
-* most popular and most follow at the top
-* some very basic web UI to test all of these 
-* unflattering image of Elon Musk in the home page. 
+* user account page
+* login page
+* tweet list page
+* user list page
+* home page
+  
