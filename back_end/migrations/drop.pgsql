@@ -1,0 +1,1 @@
+DROP TABLE  IF EXISTS like_table, comment_table, token_table, follower_table, tweet_table, user_table;
