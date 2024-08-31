@@ -16,7 +16,7 @@ export const Home = () =>{
                     <img src={"/assets/react.svg"} className="logo react" alt="React logo" />
                 </a>
             </div>
-            <h1>Vite + React</h1>
+            <h1>Vite + React + Antd</h1>
             <div className="card">
                 <Button onClick={() => setCount((count) => count + 1)}>
                     count is {count} from antd button
