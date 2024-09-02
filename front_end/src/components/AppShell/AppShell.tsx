@@ -1,7 +1,8 @@
 import { FC, ReactNode } from "react";
 import { ConfigProvider } from "antd";
 import { theme } from "../../theme/theme.ts";
-import { UserContext } from "../context/UserServiceContext.tsx";
+import { UserServiceContext } from "../context/UserServiceContext.tsx";
+import { TweetServiceContext } from "../context/TweetServiceContext.tsx";
 
 interface AppShellProps {
     children: ReactNode
@@ -10,9 +11,11 @@ interface AppShellProps {
 export const AppShell: FC<AppShellProps> = ({ children }) => {
     return (
         <ConfigProvider theme={theme}>
-            <UserContext>
-                {children}
-            </UserContext>
+            <UserServiceContext>
+                <TweetServiceContext>
+                    {children}
+                </TweetServiceContext>
+            </UserServiceContext>
         </ConfigProvider>
     )
 }

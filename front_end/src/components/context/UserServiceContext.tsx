@@ -4,11 +4,11 @@ import React from "react";
 
 const UserServiceProvider = createContext<null | UserService>(null);
 
-interface UserContextProps {
+interface UserServiceContextProps {
     children: ReactNode
 }
 
-export const UserContext: FC<UserContextProps> = ({children}) =>{
+export const UserServiceContext: FC<UserServiceContextProps> = ({children}) =>{
 
     const  userService = React.useMemo(() => new UserService(), []);
 
