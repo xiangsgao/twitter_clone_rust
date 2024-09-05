@@ -1,9 +1,13 @@
+import { RouterProvider } from 'react-router-dom';
 import './App.css'
-import { Home } from './views/Home/Home';
+import router from './routes/route';
+import { AppShell } from './components/AppShell/AppShell';
 
 function App() {
   return (
-      <Home />
+    <AppShell>
+      <RouterProvider router={router} fallbackElement={<p>Loading....</p>} />
+    </AppShell>
   )
 }
 

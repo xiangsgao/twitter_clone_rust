@@ -1,13 +1,12 @@
 import {Button} from "antd";
 import {useState} from "react";
 import {APP_URL} from "../../utils/constants.ts";
-import Layout from "../../components/layouts/Layout.tsx";
 
 
 export const Home = () =>{
     const [count, setCount] = useState(0)
     return (
-        <Layout>
+        <>
             <h1>{APP_URL}</h1>
             <div>
                 <a href="https://vitejs.dev" target="_blank">
@@ -29,6 +28,6 @@ export const Home = () =>{
             <p className="read-the-docs">
                 Click on the Vite and React logos to learn more
             </p>
-        </Layout>
+        </>
     )
 }

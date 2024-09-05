@@ -7,11 +7,12 @@ import {
   VideoCameraOutlined,
 } from '@ant-design/icons';
 import { Button, Layout, Menu, theme } from 'antd';
+import { Outlet } from 'react-router-dom';
 
 const { Header, Sider, Content } = Layout;
 
 interface LayoutProps {
-    children: ReactNode
+    children?: ReactNode
 }
 
 const App: React.FC<LayoutProps> = ({children}) => {
@@ -70,6 +71,7 @@ const App: React.FC<LayoutProps> = ({children}) => {
           }}
         >
           {children}
+          <Outlet />
         </Content>
       </Layout>
     </Layout>
