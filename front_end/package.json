@@ -11,6 +11,7 @@
     "proto": "protoc  --js_out=import_style=commonjs:./src/proto --grpc-web_out=import_style=typescript,mode=grpcwebtext:./src/proto -I ../back_end/proto ../back_end/proto/*.proto"
   },
   "dependencies": {
+    "@protobuf-ts/plugin": "^2.9.4",
     "@reduxjs/toolkit": "^2.2.7",
     "antd": "^5.20.1",
     "google-protobuf": "~3.21.2",
