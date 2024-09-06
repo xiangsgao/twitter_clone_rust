@@ -10,6 +10,11 @@ const ProtectedRoute = () =>{
    return user ? <Outlet /> : <Navigate to={"/login"} />
 }
 
+const UnprotectedRoute = () =>{
+   const user = useContext(AuthContext)?.user;
+   return !user ? <Outlet /> : <Navigate to={"/"} />
+}
+
 
 const router = createBrowserRouter([
    
@@ -28,6 +33,14 @@ const router = createBrowserRouter([
          element: <ProtectedRoute/>,
          children: [
             // TODO user settings page and the dashboard page
+         ]
+      },
+      // if vice versa, if you do not want login user to reach this route, use the UnprotectedRoute
+      {
+         path: "login",
+         element: <UnprotectedRoute/>,
+         children: [
+            // TODO login page
          ]
       },
       {
