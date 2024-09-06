@@ -1,9 +1,10 @@
 import { FC, ReactNode } from "react";
 import { ConfigProvider } from "antd";
 import { theme } from "../../theme/theme.ts";
-import { Provider } from "react-redux";
+import { Provider as ReduxProvider } from "react-redux";
 import { store } from "../../store/store.ts";
-import { ClientServiceContext } from "../context/clientContext.tsx";
+import { ClientProvider } from "../providers/clientProvider.tsx";
+import { AuthProvider } from "../providers/authProvider.tsx";
 
 interface AppShellProps {
     children: ReactNode
@@ -12,11 +13,13 @@ interface AppShellProps {
 export const AppShell: FC<AppShellProps> = ({ children }) => {
     return (
         <ConfigProvider theme={theme}>
-            <ClientServiceContext>
-                <Provider store={store}>
-                    {children}
-                </Provider>
-            </ClientServiceContext>
+            <ClientProvider>
+                <AuthProvider>
+                    <ReduxProvider store={store}>
+                        {children}
+                    </ReduxProvider>
+                </AuthProvider>
+            </ClientProvider>
         </ConfigProvider>
     )
 }

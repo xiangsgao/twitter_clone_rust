@@ -1,12 +1,12 @@
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import Layout from "../components/layouts/Layout";
 import { Home } from "../views/Home/Home";
-import { useSelector } from "react-redux";
-import { RootState } from "../store/store";
+import { useContext } from "react";
+import { AuthContext } from "../components/providers/authProvider";
 
 
 const ProtectedRoute = () =>{
-   const user = useSelector((state: RootState) => state.userSlice.user);
+   const user = useContext(AuthContext)?.user;
    return user ? <Outlet /> : <Navigate to={"/login"} />
 }
 
@@ -19,7 +19,7 @@ const router = createBrowserRouter([
     element: <Layout />,
     children: [
       {
-         path: "home",
+         path: "",
          element: <Home />
       },
       // if routes need to be protected, make sure to wrap it with protected route component
@@ -32,11 +32,11 @@ const router = createBrowserRouter([
       },
       {
          path: "*",
-         element: <Navigate to={"/home"}/>
+         element: <Navigate to={"/"}/>
       },
 
     ]
-   }
+   },
 ]);
 
 export default router;
