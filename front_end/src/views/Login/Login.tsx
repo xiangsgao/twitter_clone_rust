@@ -10,7 +10,7 @@ type FieldType = {
 export const Login = () => {
     return (
         <div>
-            <Modal open>
+            <Modal open centered closeIcon={null} closable={false} cancelButtonProps={{ style: {display: "none"}}}>
                 <Form>
                     <Form.Item<FieldType>
                         label="Username"
@@ -34,12 +34,6 @@ export const Login = () => {
                         wrapperCol={{ offset: 8, span: 16 }}
                     >
                         <Checkbox>Remember me</Checkbox>
-                    </Form.Item>
-
-                    <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-                        <Button type="primary" htmlType="submit">
-                            Submit
-                        </Button>
                     </Form.Item>
                 </Form>
             </Modal>

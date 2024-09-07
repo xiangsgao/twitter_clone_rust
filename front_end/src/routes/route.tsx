@@ -3,6 +3,8 @@ import Layout from "../components/layouts/Layout";
 import { Home } from "../views/Home/Home";
 import { useContext } from "react";
 import { AuthContext } from "../components/providers/authProvider";
+import { Login } from "../views/Login/Login";
+import { BackgroundLayout } from "../components/layouts/BackgroundLayout";
 
 
 const ProtectedRoute = () =>{
@@ -17,7 +19,6 @@ const UnprotectedRoute = () =>{
 
 
 const router = createBrowserRouter([
-   
    // all the default layout pages go under here
    {
     path: "/",
@@ -41,6 +42,23 @@ const router = createBrowserRouter([
       },
 
     ]
+   },
+   {
+      path: "/login",
+      element: <BackgroundLayout />,
+      children: [
+         // if vice versa, if you do not want login user to reach this route, use the UnprotectedRoute
+         {
+            path: "",
+            element: <UnprotectedRoute/>,
+            children: [
+               {
+                  path: "",
+                  element: <Login />
+               }
+            ]
+         },
+      ]
    },
 ]);
 

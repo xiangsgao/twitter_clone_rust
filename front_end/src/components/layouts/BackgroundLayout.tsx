@@ -2,11 +2,11 @@ import React, { ReactNode } from 'react';
 import { Layout } from 'antd';
 import { Outlet } from 'react-router-dom';
 
-interface LayoutProps {
+interface BackgroundLayoutProps {
     children?: ReactNode
 }
 
-const App: React.FC<LayoutProps> = ({children}) => {
+export const BackgroundLayout: React.FC<BackgroundLayoutProps> = ({children}) => {
 
   return (
     <Layout style={{ height : "100vh"}}>
@@ -15,5 +15,3 @@ const App: React.FC<LayoutProps> = ({children}) => {
     </Layout>
   );
 };
-
-export default App;
