@@ -35,14 +35,6 @@ const router = createBrowserRouter([
             // TODO user settings page and the dashboard page
          ]
       },
-      // if vice versa, if you do not want login user to reach this route, use the UnprotectedRoute
-      {
-         path: "login",
-         element: <UnprotectedRoute/>,
-         children: [
-            // TODO login page
-         ]
-      },
       {
          path: "*",
          element: <Navigate to={"/"}/>
