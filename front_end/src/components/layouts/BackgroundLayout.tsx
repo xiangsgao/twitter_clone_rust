@@ -6,7 +6,7 @@ interface BackgroundLayoutProps {
     children?: ReactNode
 }
 
-export const BackgroundLayout: React.FC<BackgroundLayoutProps> = ({children}) => {
+const BackgroundLayout: React.FC<BackgroundLayoutProps> = ({children}) => {
 
   return (
     <Layout style={{ height : "100vh"}}>
@@ -15,3 +15,5 @@ export const BackgroundLayout: React.FC<BackgroundLayoutProps> = ({children}) =>
     </Layout>
   );
 };
+
+export default BackgroundLayout;

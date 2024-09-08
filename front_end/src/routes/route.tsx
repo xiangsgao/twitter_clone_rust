@@ -1,10 +1,12 @@
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
-import Layout from "../components/layouts/Layout";
-import { Home } from "../views/Home/Home";
+import React from "react";
 import { useContext } from "react";
 import { AuthContext } from "../components/providers/authProvider";
-import { Login } from "../views/Login/Login";
-import { BackgroundLayout } from "../components/layouts/BackgroundLayout";
+const Layout =  React.lazy(() => import("../components/layouts/Layout"));
+const  Home  = React.lazy(() => import( "../views/Home/Home"));
+const  Login =  React.lazy(() => import("../views/Login/Login"));
+const  Register =  React.lazy(() => import("../views/Register/Register"));
+const BackgroundLayout = React.lazy(() => import("../components/layouts/BackgroundLayout"));
 
 
 const ProtectedRoute = () =>{
@@ -55,6 +57,23 @@ const router = createBrowserRouter([
                {
                   path: "",
                   element: <Login />
+               }
+            ]
+         },
+      ]
+   },
+   {
+      path: "/register",
+      element: <BackgroundLayout />,
+      children: [
+         // if vice versa, if you do not want login user to reach this route, use the UnprotectedRoute
+         {
+            path: "",
+            element: <UnprotectedRoute/>,
+            children: [
+               {
+                  path: "",
+                  element: <Register />
                }
             ]
          },

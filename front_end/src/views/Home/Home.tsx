@@ -3,7 +3,7 @@ import {useState} from "react";
 import {APP_URL} from "../../utils/constants.ts";
 
 
-export const Home = () =>{
+const Home = () =>{
     const [count, setCount] = useState(0)
     return (
         <>
@@ -31,3 +31,5 @@ export const Home = () =>{
         </>
     )
 }
+
+export default Home;

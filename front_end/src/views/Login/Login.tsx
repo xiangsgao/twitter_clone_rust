@@ -1,4 +1,4 @@
-import { Button, Checkbox, Form, Input, Modal } from "antd"
+import { Form, Input, Modal } from "antd"
 
 type FieldType = {
     username?: string;
@@ -7,7 +7,8 @@ type FieldType = {
 };
 
 
-export const Login = () => {
+const Login = () => {
+
     return (
         <div>
             <Modal open centered closeIcon={null} closable={false} cancelButtonProps={{ style: {display: "none"}}}>
@@ -27,16 +28,10 @@ export const Login = () => {
                     >
                         <Input.Password />
                     </Form.Item>
-
-                    <Form.Item<FieldType>
-                        name="remember"
-                        valuePropName="checked"
-                        wrapperCol={{ offset: 8, span: 16 }}
-                    >
-                        <Checkbox>Remember me</Checkbox>
-                    </Form.Item>
                 </Form>
             </Modal>
         </div>
     )
 }
+
+export default Login;
