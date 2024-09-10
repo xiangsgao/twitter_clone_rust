@@ -29,7 +29,7 @@ const Register = () => {
                     <Form.Item<FieldType>
                         label="First Name"
                         name="firstName"
-                        rules={[{ required: true, message: 'Please input your username!' }]}
+                        rules={[{ required: true, message: 'Please input your first name!' }]}
                     >
                         <Input />
                     </Form.Item>
@@ -37,14 +37,14 @@ const Register = () => {
                     <Form.Item<FieldType>
                         label="Last Name"
                         name="lastName"
-                        rules={[{ required: true, message: 'Please input your password!' }]}
+                        rules={[{ required: true, message: 'Please input your last name!' }]}
                     >
                         <Input />
                     </Form.Item>
                     <Form.Item<FieldType>
                         label="Email"
                         name="email"
-                        rules={[{ required: true, message: 'Please input your password!' }]}
+                        rules={[{ required: true, message: 'Please input your email!' }]}
                     >
                         <Input />
                     </Form.Item>
@@ -58,7 +58,7 @@ const Register = () => {
                     <Form.Item<FieldType>
                         label="Confirm Password"
                         name="confirmPassword"
-                        rules={[{ required: true, message: 'Please input your password!' }]}
+                        rules={[{ required: true, message: 'Please confirm your password!' }]}
                     >
                         <Input.Password />
                     </Form.Item>
