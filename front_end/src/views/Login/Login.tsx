@@ -1,7 +1,7 @@
 import { Form, Input, Modal } from "antd"
 
 type FieldType = {
-    username?: string;
+    email?: string;
     password?: string;
     remember?: string;
 };
