@@ -11,8 +11,11 @@ const Login = () => {
 
     return (
         <div>
-            <Modal open centered closeIcon={null} closable={false} cancelButtonProps={{ style: {display: "none"}}}>
-                <Form>
+            <Modal open centered closeIcon={null} closable={false} cancelButtonProps={{ style: { display: "none" } }}>
+                <Form
+                    labelCol={{ span: 5 }}
+                    wrapperCol={{ span: 19 }}
+                >
                     <Form.Item<FieldType>
                         label="Email"
                         name="email"
