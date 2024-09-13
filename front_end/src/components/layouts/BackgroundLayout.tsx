@@ -1,6 +1,12 @@
 import React, { ReactNode } from 'react';
 import { Layout } from 'antd';
 import { Outlet } from 'react-router-dom';
+import styled from 'styled-components';
+
+const StyledLayout = styled(Layout)`
+  height: 100vh;
+  background: blue;
+`
 
 interface BackgroundLayoutProps {
     children?: ReactNode
@@ -9,10 +15,10 @@ interface BackgroundLayoutProps {
 const BackgroundLayout: React.FC<BackgroundLayoutProps> = ({children}) => {
 
   return (
-    <Layout style={{ height : "100vh"}}>
+    <StyledLayout>
         {children}
         <Outlet />
-    </Layout>
+    </StyledLayout>
   );
 };
 
