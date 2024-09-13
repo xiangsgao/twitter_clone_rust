@@ -2,7 +2,7 @@ import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import React from "react";
 import { useContext } from "react";
 import { AuthContext } from "../components/providers/authProvider";
-const Layout =  React.lazy(() => import("../components/layouts/Layout"));
+const Layout =  React.lazy(() => import("../components/layouts/DefaultLayout"));
 const  Home  = React.lazy(() => import( "../views/Home/Home"));
 const  Login =  React.lazy(() => import("../views/Login/Login"));
 const  Register =  React.lazy(() => import("../views/Register/Register"));

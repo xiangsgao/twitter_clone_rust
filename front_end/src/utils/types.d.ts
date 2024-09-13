@@ -1,0 +1,3 @@
+interface StyledComponentProps{
+    className: string
+}

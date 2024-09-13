@@ -8,12 +8,17 @@ import {
 } from '@ant-design/icons';
 import { Button, Layout, Menu, theme } from 'antd';
 import { Outlet } from 'react-router-dom';
+import styled from 'styled-components';
 
 const { Header, Sider, Content } = Layout;
 
 interface LayoutProps {
     children?: ReactNode
 }
+
+const StyledLayout = styled(Layout)`
+  height: 100vh;
+`
 
 const DefaultLayout: React.FC<LayoutProps> = ({children}) => {
   const [collapsed, setCollapsed] = useState(false);
@@ -22,7 +27,7 @@ const DefaultLayout: React.FC<LayoutProps> = ({children}) => {
   } = theme.useToken();
 
   return (
-    <Layout style={{ height : "100vh"}}>
+    <StyledLayout>
       <Sider trigger={null} collapsible collapsed={collapsed}>
         <div className="demo-logo-vertical" />
         <Menu
@@ -48,7 +53,7 @@ const DefaultLayout: React.FC<LayoutProps> = ({children}) => {
           ]}
         />
       </Sider>
-      <DefaultLayout>
+      <Layout>
         <Header style={{ padding: 0, background: colorBgContainer }}>
           <Button
             type="text"
@@ -73,8 +78,8 @@ const DefaultLayout: React.FC<LayoutProps> = ({children}) => {
           {children}
           <Outlet />
         </Content>
-      </DefaultLayout>
-    </Layout>
+      </Layout>
+    </StyledLayout>
   );
 };
 
