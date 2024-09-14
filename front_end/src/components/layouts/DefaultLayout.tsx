@@ -1,4 +1,4 @@
-import React, { ReactNode, useState } from 'react';
+import React, { ReactNode, useContext, useState } from 'react';
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -6,28 +6,50 @@ import {
   UserOutlined,
   VideoCameraOutlined,
 } from '@ant-design/icons';
-import { Button, Layout, Menu, theme } from 'antd';
+import { Avatar, Button, Layout, Menu, theme } from 'antd';
 import { Outlet } from 'react-router-dom';
 import styled from 'styled-components';
+import { AuthContext } from '../providers/authProvider';
 
 const { Header, Sider, Content } = Layout;
 
 interface LayoutProps {
-    children?: ReactNode
+  children?: ReactNode
 }
 
-const StyledLayout = styled(Layout)`
+const StyledLayout = styled(Layout) <{ colorBgContainer: string, borderRadiusLG: number }>`
   height: 100vh;
+  .header{
+    padding: 0;
+    background: ${props => props.colorBgContainer};
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .content{
+      margin: 24px 16px;
+      padding: 24px;
+      min-height: 280px;
+      background: ${props => props.colorBgContainer};
+      border-radius: ${props => props.borderRadiusLG};
+  }
+  .menu-btn{
+      fontSize: 16px;
+      width: 64px;
+      height: 64px;
+  }
 `
 
-const DefaultLayout: React.FC<LayoutProps> = ({children}) => {
+const DefaultLayout: React.FC<LayoutProps> = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
 
+  const user = useContext(AuthContext)?.user;
+
   return (
-    <StyledLayout>
+    <StyledLayout borderRadiusLG={borderRadiusLG} colorBgContainer={colorBgContainer}>
       <Sider trigger={null} collapsible collapsed={collapsed}>
         <div className="demo-logo-vertical" />
         <Menu
@@ -54,27 +76,19 @@ const DefaultLayout: React.FC<LayoutProps> = ({children}) => {
         />
       </Sider>
       <Layout>
-        <Header style={{ padding: 0, background: colorBgContainer }}>
+        <Header className='header'>
           <Button
+            className='menu-btn'
             type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
             onClick={() => setCollapsed(!collapsed)}
-            style={{
-              fontSize: '16px',
-              width: 64,
-              height: 64,
-            }}
           />
+          {user ?
+            <Avatar />
+            : <Button type='text'>Login</Button>
+          }
         </Header>
-        <Content
-          style={{
-            margin: '24px 16px',
-            padding: 24,
-            minHeight: 280,
-            background: colorBgContainer,
-            borderRadius: borderRadiusLG,
-          }}
-        >
+        <Content className='content'>
           {children}
           <Outlet />
         </Content>
