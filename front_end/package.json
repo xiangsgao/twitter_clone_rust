@@ -11,6 +11,7 @@
     "proto": "protoc  --ts_out ./src/proto --proto_path ../back_end/proto ../back_end/proto/*.proto"
   },
   "dependencies": {
+    "@ant-design/icons": "^5.4.0",
     "@reduxjs/toolkit": "^2.2.7",
     "antd": "^5.20.1",
     "google-protobuf": "~3.21.2",

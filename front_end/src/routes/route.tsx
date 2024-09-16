@@ -7,6 +7,7 @@ const  Home  = React.lazy(() => import( "../views/Home/Home"));
 const  Login =  React.lazy(() => import("../views/Login/Login"));
 const  Register =  React.lazy(() => import("../views/Register/Register"));
 const BackgroundLayout = React.lazy(() => import("../components/layouts/BackgroundLayout"));
+const Profile = React.lazy(() => import("../views/Profile/Profile"));
 
 
 const ProtectedRoute = () =>{
@@ -35,7 +36,10 @@ const router = createBrowserRouter([
          path: "user",
          element: <ProtectedRoute/>,
          children: [
-            // TODO user settings page and the dashboard page
+            {
+               path: ":tab",
+               element: <Profile />
+            },
          ]
       },
       {
