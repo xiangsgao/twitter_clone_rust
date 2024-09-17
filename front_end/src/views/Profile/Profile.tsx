@@ -4,11 +4,14 @@ import { AuthContext } from "../../components/providers/authProvider"
 import UnreachableError from "../../utils/unreachableError"
 import { Menu, MenuProps } from "antd"
 import { LockOutlined, PoweroffOutlined, UserOutlined } from "@ant-design/icons"
+import { useParams } from "react-router-dom"
 
 const ProfileContainer = styled.div`
     .menu{
     }
 `
+
+type MenuOnClick =  React.ComponentProps<typeof Menu>["onClick"]
 type MenuItem = Required<MenuProps>['items'][number];
 const menuItems:  MenuItem[] = [
     {
@@ -33,14 +36,22 @@ const menuItems:  MenuItem[] = [
 
 const Profile: React.FC = () =>{
     const user = useContext(AuthContext)?.user;
-
+    const params = useParams<{tab: string}>();
+    
     if(!user){
         throw UnreachableError;
+    }
+
+
+    const defaultTab = params.tab ?? "info";
+
+    const onClick: MenuOnClick = ({key}) =>{
+      
     }
     
     return (
         <ProfileContainer>
-            <Menu className="menu" mode="vertical" items={menuItems} />
+            <Menu onClick={onClick} defaultSelectedKeys={[defaultTab]} className="menu" mode="vertical" items={menuItems} />
         </ProfileContainer>
     )
 } 
