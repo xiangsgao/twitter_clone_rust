@@ -5,6 +5,7 @@ import UnreachableError from "../../utils/unreachableError"
 import { Menu, MenuProps } from "antd"
 import { LockOutlined, PoweroffOutlined, UserOutlined } from "@ant-design/icons"
 import { useParams } from "react-router-dom"
+import Info from "./content/Info"
 
 const ProfileContainer = styled.div`
     .menu{
@@ -35,13 +36,7 @@ const menuItems:  MenuItem[] = [
    
 
 const Profile: React.FC = () =>{
-    const user = useContext(AuthContext)?.user;
     const params = useParams<{tab: string}>();
-    
-    if(!user){
-        throw UnreachableError;
-    }
-
 
     const defaultTab = params.tab ?? "info";
 
@@ -52,6 +47,7 @@ const Profile: React.FC = () =>{
     return (
         <ProfileContainer>
             <Menu onClick={onClick} defaultSelectedKeys={[defaultTab]} className="menu" mode="vertical" items={menuItems} />
+            <Info />
         </ProfileContainer>
     )
 } 
