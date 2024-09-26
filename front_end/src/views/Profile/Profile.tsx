@@ -3,7 +3,7 @@ import styled from "styled-components"
 import { AuthContext } from "../../components/providers/authProvider"
 import UnreachableError from "../../utils/unreachableError"
 import { Menu, MenuProps } from "antd"
-import { LockOutlined, PoweroffOutlined, UserOutlined } from "@ant-design/icons"
+import { LockOutlined, PoweroffOutlined, UsergroupAddOutlined, UserOutlined } from "@ant-design/icons"
 import { useParams } from "react-router-dom"
 import Info from "./content/Info"
 
@@ -19,6 +19,12 @@ const menuItems:  MenuItem[] = [
       key: 'info',
       icon: <UserOutlined />,
       label: 'User Info',
+     
+    },
+    {
+      key: 'followers',
+      icon: <UsergroupAddOutlined />,
+      label: 'Followers',
      
     },
     {
