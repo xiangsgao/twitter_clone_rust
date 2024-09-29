@@ -1,16 +1,17 @@
-import {Button} from "antd";
-import {useState} from "react";
-import {APP_URL} from "../../utils/constants.ts";
+import {Card} from "antd";
 import styled from "styled-components";
 
 const StyledDiv = styled.div`
 
 `
 const Home = () =>{
-    const [count, setCount] = useState(0)
+
+
+
     return (
         <StyledDiv>
-            
+            <Card>
+            </Card>        
         </StyledDiv>
     )
 }
